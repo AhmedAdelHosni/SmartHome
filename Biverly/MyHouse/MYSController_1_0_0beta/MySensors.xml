@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MySensors>
+  <Application>
+    <Name>MYSController</Name>
+    <Version>1.0.0</Version>
+    <Timestamp>12/24/2017 18:26:34</Timestamp>
+    <Datamodel>1.0.0</Datamodel>
+  </Application>
+  <Nodes>
+    <Node>
+      <ID>0</ID>
+      <Sketch>Gateway</Sketch>
+      <Version></Version>
+      <Sensebender>0</Sensebender>
+      <MYSBootloader>0</MYSBootloader>
+      <Battery>0</Battery>
+      <BatteryLevel>255</BatteryLevel>
+      <LastSeen>12/30/1899</LastSeen>
+      <MessageCount>0</MessageCount>
+      <LastReboot>12/30/1899</LastReboot>
+      <BootloaderVersion>65535</BootloaderVersion>
+      <Sensors/>
+    </Node>
+    <Node>
+      <ID>255</ID>
+      <Sketch>Broadcast</Sketch>
+      <Version></Version>
+      <Sensebender>0</Sensebender>
+      <MYSBootloader>0</MYSBootloader>
+      <Battery>0</Battery>
+      <BatteryLevel>255</BatteryLevel>
+      <LastSeen>12/30/1899</LastSeen>
+      <MessageCount>0</MessageCount>
+      <LastReboot>12/30/1899</LastReboot>
+      <BootloaderVersion>65535</BootloaderVersion>
+      <Sensors/>
+    </Node>
+  </Nodes>
+</MySensors>

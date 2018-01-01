@@ -1,0 +1,37 @@
+ [2017-12-24 18:19:48.648 Info] INFO	*** Logging START ***
+ [2017-12-24 18:19:48.648 Info] VERSION	1.0.0 (build 3314)
+ [2017-12-24 18:19:48.648 Info] INFO	Logging=TRUE
+ [2017-12-24 18:19:48.648 Info] INFO	AutoID=TRUE
+ [2017-12-24 18:19:48.648 Info] INFO	AutoFW=TRUE
+ [2017-12-24 18:19:48.648 Info] STARTUP	INI file loaded
+ [2017-12-24 18:19:48.648 Info] STARTUP	Loading FW repository...
+ [2017-12-24 18:19:48.652 Info] REPO	FW "Room_1_MS_1_ID1" loaded. t=10, v=1, blocks=528, crc=0x4942
+ [2017-12-24 18:19:48.652 Info] REPO	FW repository loaded. Items=1
+ [2017-12-24 18:19:48.652 Info] STARTUP	Initialize message types
+ [2017-12-24 18:19:48.652 Info] NODE	New node discovered, node id=0
+ [2017-12-24 18:19:48.652 Info] NODE	New node discovered, node id=255
+ [2017-12-24 18:19:48.652 Info] INFO	read MySensors.xml
+ [2017-12-24 18:19:48.652 Info] INFO	Application: MYSController
+ [2017-12-24 18:19:48.652 Info] INFO	Node id=0 skipped
+ [2017-12-24 18:19:48.652 Info] INFO	Node id=255 skipped
+ [2017-12-24 18:19:54.955 Info] UPDATE	current=1.0.0.3314 remote=1.0.0.3316
+ [2017-12-24 18:19:59.028 Info] INFO	Flushing FIFO
+ [2017-12-24 18:19:59.029 Info] INFO	Connected to COM6
+ [2017-12-24 18:20:02.134 Info] INFO	Disconnected
+ [2017-12-24 18:20:02.567 Info] INFO	Flushing FIFO
+ [2017-12-24 18:20:02.568 Info] INFO	Connected to COM6
+ [2017-12-24 18:20:04.353 Info] REPO	FW "Room_1_MS_1_ID1" loaded. t=10, v=1, blocks=528, crc=0x4942
+ [2017-12-24 18:20:04.353 Info] REPO	FW repository loaded. Items=1
+ [2017-12-24 18:20:07.944 Info] INFO	Listening on port 5003
+ [2017-12-24 18:21:19.920 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:23.980 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:40.372 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:42.561 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:42.564 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:42.870 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:42.871 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:43.213 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:44.692 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:21:45.282 Info] TX	255;255;3;0;20;0
+ [2017-12-24 18:26:34.898 Info] INFO	MySensors.xml saved.
+ [2017-12-24 18:26:34.915 Info] INFO	*** Logging STOP ***

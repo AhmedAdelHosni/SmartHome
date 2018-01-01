@@ -1,0 +1,43 @@
+# See: http://code.google.com/p/arduino/wiki/Platforms
+
+Add these lines to the boards.txt file in your Arduino IDE installation folder
+
+######## settings for ext XTAL 16Mhz, EESAVE, BOD1V8, no lock
+proMYSBL16.name=ATmega328 external 16Mhz with MYSBootloader
+proMYSBL16.upload.tool=avrdude
+proMYSBL16.upload.protocol=arduino
+proMYSBL16.upload.maximum_size=30720
+proMYSBL16.upload.maximum_data_size=2048
+proMYSBL16.upload.speed=115200
+proMYSBL16.bootloader.tool=avrdude
+proMYSBL16.bootloader.low_fuses=0xFF
+proMYSBL16.bootloader.high_fuses=0xD2
+proMYSBL16.bootloader.extended_fuses=0x06
+proMYSBL16.bootloader.unlock_bits=0x3F
+proMYSBL16.bootloader.lock_bits=0x3F
+proMYSBL16.bootloader.file=MySensors/MYSBootloaderV13pre.hex
+proMYSBL16.build.mcu=atmega328p
+proMYSBL16.build.f_cpu=16000000L
+proMYSBL16.build.board=AVR_UNO
+proMYSBL16.build.core=arduino
+proMYSBL16.build.variant=standard
+
+######## settings for 8Mhz internal clock, EESAVE, BOD1V8, no lock
+proMYSBL8.name=ATmega328 internal 8Mhz with MYSBootloader
+proMYSBL8.upload.tool=avrdude
+proMYSBL8.upload.protocol=arduino
+proMYSBL8.upload.maximum_size=30720
+proMYSBL8.upload.maximum_data_size=2048
+proMYSBL8.upload.speed=57600
+proMYSBL8.bootloader.tool=avrdude
+proMYSBL8.bootloader.low_fuses=0xE2
+proMYSBL8.bootloader.high_fuses=0xD2
+proMYSBL8.bootloader.extended_fuses=0x06
+proMYSBL8.bootloader.unlock_bits=0x3F
+proMYSBL8.bootloader.lock_bits=0x3F
+proMYSBL8.bootloader.file=MySensors/MYSBootloaderV13pre.hex
+proMYSBL8.build.mcu=atmega328p
+proMYSBL8.build.f_cpu=8000000L
+proMYSBL8.build.board=AVR_UNO
+proMYSBL8.build.core=arduino
+proMYSBL8.build.variant=standard

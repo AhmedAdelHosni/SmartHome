@@ -1,0 +1,8 @@
+
+String : K***************
+secretkey : ahmedadelbiverly
+
+SHA256
+
+
+Node 0 (B) : #define MY_RF24_BASE_RADIO_ID 0xd1,0x24,0xdd,0xde,0x99
