@@ -33,8 +33,13 @@ static unsigned long previous_millis_50ms = 0;
   
 
 static u8 pin_d_states_previous = 0;
+static u8 pin_c_states_previous = 0;
+static u8 pin_l_states_previous = 0;
 
-static u8 pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29 };
+static u8 pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
+                           37, 36, 35, 34, 33, 32, 31, 30,
+                           49, 48, 47, 46, 45, 44, 43, 42
+                           };
 
 static String topic_value = "";
 
@@ -117,18 +122,18 @@ void setup()
 #include <stdio.h>
 
 
-void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous)
+void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_start)
 {
   if(( (*pin_states) ^ (*pin_states_previous) ) != 0)
   {
     u8 current_pin_states = *pin_states;
     u8 updated_pins       = current_pin_states ^ *pin_states_previous;
     
-    for (u8 pin_i = 0; pin_i < 8; pin_i++)
+    for (u8 pin_i = 0; pin_i <= 7; pin_i++)
     {
       if ( (((u8)(updated_pins >> (u8) pin_i)) & (u8)1) != (u8)0 )
       {
-        String topic_name = "/" + String(DEVICE_NAME) + "/MOTION/" + String(pin_number[pin_i]) + "/";
+        String topic_name = "/" + String(DEVICE_NAME) + "/MOTION/" + String(pin_number[pin_i + pin_start]) + "/";
         topic_name.toCharArray(topic_name_mqtt, topic_name.length()+1);
                   
         ((current_pin_states >> pin_i) & 1) ? topic_value = "OPEN" : topic_value = "CLOSED";
@@ -154,7 +159,9 @@ void loop()
   if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
   {
     previous_millis_50ms = millis();    
-    publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous);
+    publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous, 0);
+    publish_updated_pins(port_to_input_PGM[PIN_C], &pin_c_states_previous, 8);
+    publish_updated_pins(port_to_input_PGM[PIN_L], &pin_l_states_previous, 16);
   }
 }
 
