@@ -1,19 +1,40 @@
-
-
+#include <EEPROM.h>
 #include <Ethernet.h>
 #include <MQTT.h>
 
 
-#define DEVICE_NAME "ETH0"
-#define INTERVAL_PERIOD_50_MS 50
+#define DEVICE_NAME                 "ETH0"
+#define INTERVAL_PERIOD_50_MS       50
 
-//typedef unsigned int  u8;
+enum PIN_x
+{
+  unused_pin_x_0,
+  PIN_A,
+  PIN_B,
+  PIN_C,
+  PIN_D,
+  PIN_E,
+  PIN_F,
+  PIN_G,
+  PIN_H,
+  unused_pin_x_1,
+  PIN_J,
+  PIN_K,
+  PIN_L
+} PIN_x_E;
+
+
+char motion_sensor_mqtt_topics[50][15] = 
+{ 
+};
 
 static unsigned long current_millis = millis();
 static unsigned long previous_millis_50ms = 0;
   
-static u8* pin_d_states = &PINK;
+
 static u8 pin_d_states_previous = 0;
+
+static u8 pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29 };
 
 static String topic_value = "";
 
@@ -26,32 +47,7 @@ byte ip[] = {192, 168, 100, 177};  // <- change to match your network
 EthernetClient net;
 MQTTClient client;
 
-typedef enum
-{
-    LAUNDRY,
-    BATHROOM,
-    ENTRANCE = 2,
-    MASTER_ROOM,
-    KITCHECN,
-    LIVING,
-    BOYS,
-    GIRLS,
-    MOTION_MAX_NUM
-} m_sensor_E;
-
-char motion_sensor_mqtt_topics[MOTION_MAX_NUM][15] = 
-{ 
-    "LAUNDRY",
-    "BATHROOM",
-    "ENTRANCE",
-    "MASTER_ROOM",
-    "KITCHECN",
-    "LIVING",
-    "BOYS",
-    "GIRLS"
-};
-
-
+/*
 void output_high(u8 * port_name, m_sensor_E pin)
 {
     if (pin < 8)
@@ -59,15 +55,16 @@ void output_high(u8 * port_name, m_sensor_E pin)
         *port_name |= (u8)((u8)1<<(u8) pin);
     }
 }
-
-void output_low(u8 * port_name, m_sensor_E pin)
+*/
+/*
+void output_low(u8 * port_name, u8 pin)
 {
     if (pin < 8)
     {
         *port_name &= ~(1 <<(u8) pin);
     }
 }
-
+*/
 
 void connect() {
   Serial.print("connecting...");
@@ -75,11 +72,7 @@ void connect() {
     Serial.print(".");
     delay(1000);
   }
-
   Serial.println("\nconnected!");
-
-  client.subscribe("/hello");
-  // client.unsubscribe("/hello");
 }
 
 void messageReceived(String &topic, String &payload) {
@@ -91,17 +84,16 @@ void messageReceived(String &topic, String &payload) {
 void setup() 
 {
 
-#ifdef AVR_UNO
+#ifdef ARDUINO_AVR_UNO
   PORTD = 0xFC;    //Set port D pin 7 6 5 4 3 2 as pull up
-#elif AVR_MEGA
-
-#endif
+#elif ARDUINO_AVR_MEGA2560
   PORTA = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA
   PORTC = 0xFF;    //Set port C pin 7 6 5 4 3 2 1 0 as pull up for MEGA
   PORTL = 0xFF;    //Set port L pin 7 6 5 4 3 2 1 0 as pull up for MEGA
- // PORTF = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
+  PORTF = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
   PORTK = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
-  
+#endif
+
   Serial.begin(115200);
   Ethernet.begin(mac, ip);
 
@@ -114,14 +106,44 @@ void setup()
 
   
   Serial.println("Begin");
+  Serial.println(motion_sensor_mqtt_topics[0]);
+  char * words = "hamda";
+  strcpy(motion_sensor_mqtt_topics[33], words);
+  
+  Serial.println(motion_sensor_mqtt_topics[33]);
 }
 
 
 #include <stdio.h>
 
+
+void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous)
+{
+  if(( (*pin_states) ^ (*pin_states_previous) ) != 0)
+  {
+    u8 current_pin_states = *pin_states;
+    u8 updated_pins       = current_pin_states ^ *pin_states_previous;
+    
+    for (u8 pin_i = 0; pin_i < 8; pin_i++)
+    {
+      if ( (((u8)(updated_pins >> (u8) pin_i)) & (u8)1) != (u8)0 )
+      {
+        String topic_name = "/" + String(DEVICE_NAME) + "/MOTION/" + String(pin_number[pin_i]) + "/";
+        topic_name.toCharArray(topic_name_mqtt, topic_name.length()+1);
+                  
+        ((current_pin_states >> pin_i) & 1) ? topic_value = "OPEN" : topic_value = "CLOSED";
+        topic_value.toCharArray(topic_value_mqtt, topic_value.length()+1);
+  
+        client.publish(topic_name_mqtt , topic_value_mqtt);
+      }
+    }       
+    *pin_states_previous = current_pin_states;
+  }
+}
+
 void loop()
 {
-     current_millis = millis();
+  current_millis = millis();
 
   client.loop();
 
@@ -131,35 +153,8 @@ void loop()
   
   if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
   {
-     previous_millis_50ms = millis();    
-
-    if(( (*pin_d_states) ^ (pin_d_states_previous) ) != 0)
-    {
-      u8 current_pin_states = *pin_d_states;
-      u8 updated_pins = current_pin_states ^ pin_d_states_previous;
-      
-      for (u8 pin_i = 0; pin_i < MOTION_MAX_NUM; pin_i++)
-      {
-        if ( (((u8)(updated_pins >> (u8) pin_i)) & (u8)1) != (u8)0 )
-        {
-    //       Serial.print("/");
-    //       Serial.print(DEVICE_NAME);
-    //      Serial.print("/MOTION/");
-        //  Serial.print(motion_sensor_mqtt_topics[pin_i]);
-      //    Serial.print("/");
-        //  Serial.println(((*pin_d_states >> pin_i) & 1));
-    
-          String topic_name = "/" + String(DEVICE_NAME) + "/MOTION/" + String(motion_sensor_mqtt_topics[pin_i]) + "/";
-          topic_name.toCharArray(topic_name_mqtt, topic_name.length()+1);
-    Serial.println(topic_name.length());
-          ((current_pin_states >> pin_i) & 1) ? topic_value = "OPEN" : topic_value = "CLOSED";
-          topic_value.toCharArray(topic_value_mqtt, topic_value.length()+1);
-    
-          client.publish(topic_name_mqtt , topic_value_mqtt);
-        }
-      }      
-      pin_d_states_previous = current_pin_states;
-    }
+    previous_millis_50ms = millis();    
+    publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous);
   }
 }
 
