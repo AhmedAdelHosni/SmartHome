@@ -1,0 +1,93 @@
+	PA	, // PA 0 ** 22 ** D22	( INPUT 01)  ( MOTION / DOOR / WINDOW ) ( 01 )
+	PA	, // PA 1 ** 23 ** D23	( INPUT 02)  ( MOTION / DOOR / WINDOW ) ( 02 )
+	PA	, // PA 2 ** 24 ** D24	( INPUT 03)  ( MOTION / DOOR / WINDOW ) ( 03 )
+	PA	, // PA 3 ** 25 ** D25	( INPUT 04)  ( MOTION / DOOR / WINDOW ) ( 04 )
+	PA	, // PA 4 ** 26 ** D26	( INPUT 05)  ( MOTION / DOOR / WINDOW ) ( 05 )
+	PA	, // PA 5 ** 27 ** D27	( INPUT 06)  ( MOTION / DOOR / WINDOW ) ( 06 )
+	PA	, // PA 6 ** 28 ** D28	( INPUT 07)  ( MOTION / DOOR / WINDOW ) ( 07 )
+	PA	, // PA 7 ** 29 ** D29	( INPUT 08)  ( MOTION / DOOR / WINDOW ) ( 08 )
+                                                                        
+	PL	, // PL 7 ** 42 ** D42	( INPUT 09)  ( MOTION / DOOR / WINDOW ) ( 09 )
+	PL	, // PL 6 ** 43 ** D43	( INPUT 10)  ( MOTION / DOOR / WINDOW ) ( 10 )
+	PL	, // PL 5 ** 44 ** D44	( INPUT 11)  ( MOTION / DOOR / WINDOW ) ( 11 )
+	PL	, // PL 4 ** 45 ** D45	( INPUT 12)  ( MOTION / DOOR / WINDOW ) ( 12 )
+	PL	, // PL 3 ** 46 ** D46	( INPUT 13)  ( MOTION / DOOR / WINDOW ) ( 13 )
+	PL	, // PL 2 ** 47 ** D47	( INPUT 14)  ( MOTION / DOOR / WINDOW ) ( 14 )
+	PL	, // PL 1 ** 48 ** D48	( INPUT 15)  ( MOTION / DOOR / WINDOW ) ( 15 )
+	PL	, // PL 0 ** 49 ** D49	( INPUT 16)  ( MOTION / DOOR / WINDOW ) ( 16 )
+
+	PC	, // PC 7 ** 30 ** D30	( INPUT 17)  ( MOTION / DOOR / WINDOW ) ( 17 )
+	PC	, // PC 6 ** 31 ** D31	( INPUT 18)  ( MOTION / DOOR / WINDOW ) ( 18 )
+	PC	, // PC 5 ** 32 ** D32	( INPUT 19)  ( MOTION / DOOR / WINDOW ) ( 19 )
+	PC	, // PC 4 ** 33 ** D33	( INPUT 20)  ( MOTION / DOOR / WINDOW ) ( 20 )
+	PC	, // PC 3 ** 34 ** D34	( INPUT 21)  ( MOTION / DOOR / WINDOW ) ( 21 )
+	PC	, // PC 2 ** 35 ** D35	( INPUT 22)  ( MOTION / DOOR / WINDOW ) ( 22 )
+	PC	, // PC 1 ** 36 ** D36	( INPUT 23)  ( MOTION / DOOR / WINDOW ) ( 23 )
+	PC	, // PC 0 ** 37 ** D37	( INPUT 24)  ( MOTION / DOOR / WINDOW ) ( 24 )
+
+	PJ	, // PJ 1 ** 14 ** USART3_TX ( INPUT / OUTPUT )	{ INPUT 41 }   	( 25 )           
+	PJ	, // PJ 0 ** 15 ** USART3_RX ( INPUT / OUTPUT )	{ INPUT 42 }    ( 26 )	
+	
+**************************************************
+
+
+	PF	, // PF 0 ** 54 ** A0	( INPUT 25)   ( LIGHT STATE ) ( 01 )
+	PF	, // PF 1 ** 55 ** A1	( INPUT 26)   ( LIGHT STATE ) ( 02 )  
+	PF	, // PF 2 ** 56 ** A2	( INPUT 27)   ( LIGHT STATE ) ( 03 )  
+	PF	, // PF 3 ** 57 ** A3	( INPUT 28)   ( LIGHT STATE ) ( 04 )  
+	PF	, // PF 4 ** 58 ** A4	( INPUT 29)   ( LIGHT STATE ) ( 05 )  
+	PF	, // PF 5 ** 59 ** A5	( INPUT 30)   ( LIGHT STATE ) ( 06 )  
+	PF	, // PF 6 ** 60 ** A6	( INPUT 31)   ( LIGHT STATE ) ( 07 )  
+	PF	, // PF 7 ** 61 ** A7	( INPUT 32)   ( LIGHT STATE ) ( 08 )  
+                                                            
+	PK	, // PK 0 ** 62 ** A8	( INPUT 33)   ( LIGHT STATE ) ( 09 )  
+	PK	, // PK 1 ** 63 ** A9	( INPUT 34)   ( LIGHT STATE ) ( 10 )  
+	PK	, // PK 2 ** 64 ** A10	( INPUT 35)   ( LIGHT STATE ) ( 11 )  	
+	PK	, // PK 3 ** 65 ** A11	( INPUT 36)   ( LIGHT STATE ) ( 12 )  	
+	PK	, // PK 4 ** 66 ** A12	( INPUT 37)   ( LIGHT STATE ) ( 13 )  	
+	PK	, // PK 5 ** 67 ** A13	( INPUT 38)   ( LIGHT STATE ) ( 14 )  	
+	PK	, // PK 6 ** 68 ** A14	( INPUT 39)   ( LIGHT STATE ) ( 15 )  	
+	PK	, // PK 7 ** 69 ** A15	( INPUT 40)   ( LIGHT STATE ) ( 16 )  
+	
+
+****************************************************
+	
+	
+	PD	, // PD 0 ** 21 ** I2C_SCL	 ( INPUT / OUTPUT ) { For Future Use }
+	PD	, // PD 1 ** 20 ** I2C_SDA	 ( INPUT / OUTPUT )	{ For Future Use }
+	PD	, // PD 2 ** 19 ** USART1_RX ( INPUT / OUTPUT ) { OUTPUT 01 }
+	PD	, // PD 3 ** 18 ** USART1_TX ( INPUT / OUTPUT )	{ OUTPUT 02 }
+	PD	, // PD 7 ** 38 ** D38	     ( INPUT / OUTPUT ) { OUTPUT 03 }
+                                                        
+	PE	, // PE	0 ** 0 ** USART0_RX	 ( SERIAL UART )    						PINE = B11111100;         // All pulled up except Rx and Tx  
+	PE	, // PE 1 ** 1 ** USART0_TX	 ( SERIAL UART )    						DDRE | DDRE = B11111100;  // All outputs except Rx and Tx
+	PE	, // PE 3 ** 5 ** PWM5	     ( INPUT / OUTPUT ) { OUTPUT 04 }			
+	PE	, // PE 4 ** 2 ** PWM2	     ( INPUT / OUTPUT ) { OUTPUT 05 }			
+	PE	, // PE 5 ** 3 ** PWM3	     ( INPUT / OUTPUT ) { OUTPUT 06 }
+	                                                    
+                                                        
+	PG	, // PG 0 ** 41 ** D41		 ( INPUT / OUTPUT )	{ OUTPUT 07 }			// NOTE : when all pulled up, PING was 63. Check datasheet for bit 6 and 7
+	PG	, // PG 1 ** 40 ** D40		 ( INPUT / OUTPUT )	{ OUTPUT 08 }			DDRG | DDRG = B00100111;
+	PG	, // PG 2 ** 39 ** D39		 ( INPUT / OUTPUT ) { OUTPUT 09 }			PORTG = B00100111;
+	PG	, // PG 5 ** 4  ** PWM4	     ( INPUT / OUTPUT ) { OUTPUT 10 }			( SD Card SS on ETHERNET Sheild - Shall be converted if used as input )	
+	                                                    
+	PH	, // PH 0 ** 17 ** USART	 ( INPUT / OUTPUT ) { OUTPUT 11 }			DDRH = 0xFF // All Outputs	
+	PH	, // PH 1 ** 16 ** USART2_TX ( INPUT / OUTPUT ) { OUTPUT 12 }			
+	PH	, // PH 3 ** 6 ** PWM6		 ( INPUT / OUTPUT ) { OUTPUT 13 }	
+	PH	, // PH 4 ** 7 ** PWM7		 ( INPUT / OUTPUT ) { OUTPUT 14 }	
+	PH	, // PH 5 ** 8 ** PWM8		 ( INPUT / OUTPUT ) { OUTPUT 15 }	
+	PH	, // PH 6 ** 9 ** PWM9		 ( INPUT / OUTPUT ) { OUTPUT 16 }	
+                                                        		
+	
+	
+***********************************************
+
+
+	PB	, // PB 0 ** 53 ** SPI_SS	( ETHERNET ) ( Shall not be used )
+	PB	, // PB 1 ** 52 ** SPI_SCK	( ETHERNET SCK )
+	PB	, // PB 2 ** 51 ** SPI_MOSI	( ETHERNET MOSI )
+	PB	, // PB 3 ** 50 ** SPI_MISO	( ETHERNET MISO )	
+	PB	, // PB 4 ** 10 ** PWM10	( ETHERNET SS PIN )
+	PB	, // PB 5 ** 11 ** PWM11	( OUTPUT 17 )
+	PB	, // PB 6 ** 12 ** PWM12	( OUTPUT 18 )
+	PB	, // PB 7 ** 13 ** PWM13	( OUTPUT 19 )

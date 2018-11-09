@@ -8,7 +8,7 @@
 
 enum PIN_x
 {
-  unused_pin_x_0,
+  UNUSED_PIN_X_0,
   PIN_A,
   PIN_B,
   PIN_C,
@@ -17,29 +17,33 @@ enum PIN_x
   PIN_F,
   PIN_G,
   PIN_H,
-  unused_pin_x_1,
+  UNUSED_PIN_X_1,
   PIN_J,
   PIN_K,
   PIN_L
 } PIN_x_E;
 
-
-char motion_sensor_mqtt_topics[50][15] = 
-{ 
+char motion_sensor_mqtt_topics[50][15] =
+{
 };
 
 static unsigned long current_millis = millis();
 static unsigned long previous_millis_50ms = 0;
-  
+
 
 static u8 pin_d_states_previous = 0;
 static u8 pin_c_states_previous = 0;
 static u8 pin_l_states_previous = 0;
 
-static u8 pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
+static u8 input_pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
                            37, 36, 35, 34, 33, 32, 31, 30,
                            49, 48, 47, 46, 45, 44, 43, 42
                            };
+
+static String input_sensor_type[] = { "DOORS", "DOORS", "DOORS", "DOORS", "DOORS", "DOORS" ,"DOORS", "DOORS",
+                                  "DOORS", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW",
+                                  "WINDOW", "WINDOW", "MOTION", "MOTION", "MOTION", "MOTION", "MOTION", "MOTION"
+                                    };
 
 static String topic_value = "";
 
@@ -86,7 +90,7 @@ void messageReceived(String &topic, String &payload) {
 
 
 
-void setup() 
+void setup()
 {
 
 #ifdef ARDUINO_AVR_UNO
@@ -109,12 +113,12 @@ void setup()
 
   connect();
 
-  
+
   Serial.println("Begin");
   Serial.println(motion_sensor_mqtt_topics[0]);
   char * words = "hamda";
   strcpy(motion_sensor_mqtt_topics[33], words);
-  
+
   Serial.println(motion_sensor_mqtt_topics[33]);
 }
 
@@ -128,20 +132,20 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_star
   {
     u8 current_pin_states = *pin_states;
     u8 updated_pins       = current_pin_states ^ *pin_states_previous;
-    
+
     for (u8 pin_i = 0; pin_i <= 7; pin_i++)
     {
       if ( (((u8)(updated_pins >> (u8) pin_i)) & (u8)1) != (u8)0 )
       {
-        String topic_name = "/" + String(DEVICE_NAME) + "/MOTION/" + String(pin_number[pin_i + pin_start]) + "/";
+        String topic_name = "/" + String(DEVICE_NAME) + input_sensor_type[pin_i + pin_start] + String(input_pin_number[pin_i + pin_start]) + "/";
         topic_name.toCharArray(topic_name_mqtt, topic_name.length()+1);
-                  
+
         ((current_pin_states >> pin_i) & 1) ? topic_value = "OPEN" : topic_value = "CLOSED";
         topic_value.toCharArray(topic_value_mqtt, topic_value.length()+1);
-  
+
         client.publish(topic_name_mqtt , topic_value_mqtt);
       }
-    }       
+    }
     *pin_states_previous = current_pin_states;
   }
 }
@@ -155,13 +159,12 @@ void loop()
   if (!client.connected()) {
     connect();
   }
-  
+
   if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
   {
-    previous_millis_50ms = millis();    
+    previous_millis_50ms = millis();
     publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous, 0);
     publish_updated_pins(port_to_input_PGM[PIN_C], &pin_c_states_previous, 8);
     publish_updated_pins(port_to_input_PGM[PIN_L], &pin_l_states_previous, 16);
   }
 }
-
