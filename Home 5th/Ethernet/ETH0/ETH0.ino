@@ -41,8 +41,8 @@ static u8 input_pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
                            };
 
 static String input_sensor_type[] = { "DOORS", "DOORS", "DOORS", "DOORS", "DOORS", "DOORS" ,"DOORS", "DOORS",
-                                  "DOORS", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW",
-                                  "WINDOW", "WINDOW", "MOTION", "MOTION", "MOTION", "MOTION", "MOTION", "MOTION"
+                                      "DOORS", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW", "WINDOW",
+                                      "WINDOW", "WINDOW", "MOTION", "MOTION", "MOTION", "MOTION", "MOTION", "MOTION"
                                     };
 
 static String topic_value = "";
