@@ -1,10 +1,34 @@
+
+/******************************************************************************/
+/*                Include common and project definition header                */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                      Include headers of the component                      */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/*                            Include other headers                           */
+/******************************************************************************/
 #include <EEPROM.h>
 #include <Ethernet.h>
 #include <MQTT.h>
 
+/******************************************************************************/
+/*                   Definition of local symbolic constants                   */
+/******************************************************************************/
 
 #define DEVICE_NAME                 "ETH0"
 #define INTERVAL_PERIOD_50_MS       50
+
+/******************************************************************************/
+/*                  Definition of local function like macros                  */
+/******************************************************************************/
+
+/******************************************************************************/
+/*          Definition of local types (typedef, enum, struct, union)          */
+/******************************************************************************/
 
 enum PIN_x
 {
@@ -29,17 +53,25 @@ enum sensor_type
 	STATUS
 }
 
-char motion_sensor_mqtt_topics[50][5] = {};
-
-static unsigned long current_millis = millis();
-static unsigned long previous_millis_50ms = 0;
-
+/******************************************************************************/
+/*                       Definition of local variables                        */
+/******************************************************************************/
 
 static u8 pin_d_states_previous = 0;
 static u8 pin_c_states_previous = 0;
 static u8 pin_l_states_previous = 0;
 static u8 pin_f_states_previous = 0;
 static u8 pin_k_states_previous = 0;
+
+static unsigned long current_millis = millis();
+static unsigned long previous_millis_50ms = 0;
+
+static char motion_sensor_mqtt_topics[50][5] = {};
+static char topic_name_mqtt [50];
+static char topic_value_mqtt[50];
+static char mqtt_topic      [50];
+
+static String topic_value = "";
 
 static u8 input_pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
 								 37, 36, 35, 34, 33, 32, 31, 30,
@@ -55,19 +87,27 @@ static String input_sensor_type[] = { "D", "D", "D", "D", "D", "D" ,"D", "D",
 									  "L", "L", "L", "L", "L", "L", "L", "L"
                                     };
 
-static String topic_value = "";
 
-char topic_name_mqtt[50];
-char topic_value_mqtt[50];
 
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 byte ip[] = {192, 168, 100, 177};  // <- change to match your network
 
+/******************************************************************************/
+/*                  Declaration of local function prototypes                  */
+/******************************************************************************/
+
 void process_inputs(void);
 void process_outputs(void);
 
+/******************************************************************************/
+/*                        Declaration of local Objects                        */
+/******************************************************************************/
 EthernetClient net;
 MQTTClient client;
+
+/******************************************************************************/
+/*                       Definition of local functions                        */
+/******************************************************************************/
 
 /*
 void output_high(u8 * port_name, m_sensor_E pin)
@@ -97,9 +137,6 @@ void connect() {
   Serial.println("\nconnected!");
 }
 
-void messageReceived(String &topic, String &payload) {
-  Serial.println("incoming: " + topic + " - " + payload);
-}
 
 
 
@@ -125,6 +162,7 @@ void setup()
   client.onMessage(messageReceived);
 
   connect();
+  client.subscribe(mqtt_topic);
 
 
   Serial.println("Begin");
@@ -135,8 +173,10 @@ void setup()
   Serial.println(motion_sensor_mqtt_topics[33]);
 }
 
+void messageReceived(String &topic, String &payload) {
+  Serial.println("incoming: " + topic + " - " + payload);
+}
 
-#include <stdio.h>
 
 
 void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_start, enum sensor_type sensor_type_e)
