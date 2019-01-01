@@ -1,0 +1,1 @@
+Switch Power_Plug_Socket_1 <light> {mqtt=">[broker:OH/E0/L/54/cmd:command:ON:1],>[broker:OH/E0/L/54/cmd:command:OFF:0],<[broker:testsw/1/state:state:default]", autoupdate="false"}
