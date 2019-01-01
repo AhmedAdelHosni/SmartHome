@@ -19,7 +19,8 @@
 /*                   Definition of local symbolic constants                   */
 /******************************************************************************/
 
-#define DEVICE_NAME                 "ETH0"
+#define ETHERNET_CONN
+#define DEVICE_NAME                 "E0" // Ethernet node 0
 #define INTERVAL_PERIOD_50_MS       50
 
 /******************************************************************************/
@@ -49,9 +50,9 @@ enum PIN_x
 
 enum sensor_type
 {
-	CONTACT = 0,
-	STATUS
-}
+  CONTACT = 0,
+  STATUS
+};
 
 /******************************************************************************/
 /*                       Definition of local variables                        */
@@ -69,29 +70,30 @@ static unsigned long previous_millis_50ms = 0;
 static char motion_sensor_mqtt_topics[50][5] = {};
 static char topic_name_mqtt [50];
 static char topic_value_mqtt[50];
-static char mqtt_topic      [50];
+static char mqtt_topic      [50] = "OH/E0/#";
 
 static String topic_value = "";
 
 static u8 input_pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
-								 37, 36, 35, 34, 33, 32, 31, 30,
-								 49, 48, 47, 46, 45, 44, 43, 42,
-								 54, 55, 56, 57, 58, 59, 60, 61,
-								 62, 63, 64, 65, 66, 67, 68, 69
-								};
+                                 37, 36, 35, 34, 33, 32, 31, 30,
+                                 49, 48, 47, 46, 45, 44, 43, 42,
+                                 54, 55, 56, 57, 58, 59, 60, 61,
+                                 62, 63, 64, 65, 66, 67, 68, 69
+                                };
 
 static String input_sensor_type[] = { "D", "D", "D", "D", "D", "D" ,"D", "D",
                                       "D", "W", "W", "W", "W", "W", "W", "W",
                                       "W", "W", "M", "M", "M", "M", "M", "M",
-									  "L", "L", "L", "L", "L", "L", "L", "L",
-									  "L", "L", "L", "L", "L", "L", "L", "L"
+                                      "L", "L", "L", "L", "L", "L", "L", "L",
+                                      "L", "L", "L", "L", "L", "L", "L", "L"
                                     };
 
 
 
+#ifdef ETHERNET_CONN
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 byte ip[] = {192, 168, 100, 177};  // <- change to match your network
-
+#endif
 /******************************************************************************/
 /*                  Declaration of local function prototypes                  */
 /******************************************************************************/
@@ -102,8 +104,11 @@ void process_outputs(void);
 /******************************************************************************/
 /*                        Declaration of local Objects                        */
 /******************************************************************************/
+
+#ifdef ETHERNET_CONN
 EthernetClient net;
 MQTTClient client;
+#endif
 
 /******************************************************************************/
 /*                       Definition of local functions                        */
@@ -127,7 +132,7 @@ void output_low(u8 * port_name, u8 pin)
     }
 }
 */
-
+#ifdef ETHERNET_CONN
 void connect() {
   Serial.print("connecting...");
   while (!client.connect("arduino", "try", "try")) {
@@ -136,8 +141,13 @@ void connect() {
   }
   Serial.println("\nconnected!");
 }
+#endif
 
-
+#ifdef ETHERNET_CONN
+void messageReceived(String &topic, String &payload) {
+  Serial.println("incoming: " + topic + " - " + payload);
+}
+#endif
 
 
 void setup()
@@ -154,16 +164,20 @@ void setup()
 #endif
 
   Serial.begin(115200);
+#ifdef ETHERNET_CONN
   Ethernet.begin(mac, ip);
 
   // Note: Local domain names (e.g. "Computer.local" on OSX) are not supported by Arduino.
   // You need to set the IP address directly.
-  client.begin("192.168.100.107", net);
+  client.begin("192.168.100.106", net);
   client.onMessage(messageReceived);
 
   connect();
   client.subscribe(mqtt_topic);
 
+
+  client.publish("ETH0/state", "System was restared");
+#endif
 
   Serial.println("Begin");
   Serial.println(motion_sensor_mqtt_topics[0]);
@@ -173,9 +187,6 @@ void setup()
   Serial.println(motion_sensor_mqtt_topics[33]);
 }
 
-void messageReceived(String &topic, String &payload) {
-  Serial.println("incoming: " + topic + " - " + payload);
-}
 
 
 
@@ -194,17 +205,22 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_star
         topic_name.toCharArray(topic_name_mqtt, topic_name.length()+1);
 
         if(sensor_type_e == CONTACT) // For Contact switches like Doors, Windows & Motion
-		{
-			((current_pin_states >> pin_i) & 1) ? (topic_value = "OPEN") : (topic_value = "CLOSED");
-		}
-		else if(sensor_type_e == STATUS) // For AC status report feedback to OpenHAB. 
-		{
-			((current_pin_states >> pin_i) & 1) ? (topic_value = "ON") : (topic_value = "OFF");
-		}
-		
+    {
+      ((current_pin_states >> pin_i) & 1) ? (topic_value = "OPEN") : (topic_value = "CLOSED");
+    }
+    else if(sensor_type_e == STATUS) // For AC status report feedback to OpenHAB. 
+    {
+      ((current_pin_states >> pin_i) & 1) ? (topic_value = "ON") : (topic_value = "OFF");
+    }
+    
         topic_value.toCharArray(topic_value_mqtt, topic_value.length()+1);
 
+        Serial.print(topic_name + " " );
+        Serial.println(topic_value);
+#ifdef ETHERNET_CONN
         client.publish(topic_name_mqtt , topic_value_mqtt);
+        client.publish("testsw/1", "OFF");
+#endif
       }
     }
     *pin_states_previous = current_pin_states;
@@ -213,7 +229,7 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_star
 
 void process_inputs(void)
 {
-	publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous, 0,  CONTACT);
+    publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous, 0,  CONTACT);
     publish_updated_pins(port_to_input_PGM[PIN_C], &pin_c_states_previous, 8,  CONTACT);
     publish_updated_pins(port_to_input_PGM[PIN_L], &pin_l_states_previous, 16, CONTACT);
     publish_updated_pins(port_to_input_PGM[PIN_F], &pin_f_states_previous, 24, CONTACT);
@@ -222,24 +238,26 @@ void process_inputs(void)
 
 void process_outputs(void)
 {
-	
+  
 }
 
 void loop(void)
 {
   current_millis = millis();
 
+#ifdef ETHERNET_CONN
   client.loop();
-
+  
   if (!client.connected()) {
     connect();
   }
+#endif
 
   if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
   {
     previous_millis_50ms = millis();
     
-	process_inputs();
-	process_outputs();
+    process_inputs();
+    process_outputs();
   }
 }
