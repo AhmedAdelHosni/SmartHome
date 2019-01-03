@@ -90,7 +90,7 @@ static u8 input_pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
                                  62, 63, 64, 65, 66, 67, 68, 69
                                 };
          
-static u8 mqtt_topic_to_port_pin[] =       {0, 3, 4, 5,
+static u8 mqtt_topic_to_port_pin[]       = {0, 3, 4, 5,
                                             5,
                                             0, 1, 3, 4, 5, 6,
                                             5, 6, 7,
@@ -124,6 +124,7 @@ byte ip[] = {192, 168, 43, 177};  // <- change to match your network
 /*                  Declaration of local function prototypes                  */
 /******************************************************************************/
 
+void disable_serial_rx(void);
 void process_inputs(void);
 void process_outputs(void);
 void check_mqtt_error(void);
@@ -186,7 +187,7 @@ void connect() {
 #endif
 
 #ifdef ETHERNET_CONN
-void messageReceived(String &topic, String &payload) {
+void mqtt_message_received(String &topic, String &payload) {
   Serial.println("incoming: " + topic + " - " + payload);
   mqtt_read_topic_buffer = topic;
   mqtt_read_payload_buffer = payload;
@@ -194,6 +195,11 @@ void messageReceived(String &topic, String &payload) {
 }
 #endif
 
+void disable_serial_rx(void)
+{
+  cbi(*_ucsrb, RXEN0);
+  cbi(*_ucsrb, RXCIE0);
+}
 
 void setup()
 {
@@ -211,6 +217,8 @@ void setup()
 #endif
 
   Serial.begin(115200);
+  disable_serial_rx(); // override the Serial.begin and disable the Receiver since pin PE1 "USART0_RX" will be used.
+  
 #ifdef ETHERNET_CONN
   Ethernet.begin(mac, ip);
 
@@ -218,7 +226,7 @@ void setup()
   // You need to set the IP address directly.
  // client.begin("192.168.100.106", net);
   client.begin("192.168.43.200", net);
-  client.onMessage(messageReceived);
+  client.onMessage(mqtt_message_received);
 
   connect();
   client.subscribe(mqtt_topic_subscribe);
@@ -346,11 +354,12 @@ void check_mqtt_error(void)
   if(mqtt_is_new_packet_available > 1)
   {
     Serial.print("MQTT PACKET MISSED. Counter is : ");
-    Serial.println(12);
+    Serial.println(mqtt_is_new_packet_available);
 #ifdef ETHERNET_CONN   
     itoa(mqtt_is_new_packet_available, topic_value_mqtt, 5);
-    client.publish("E0/OH/ERRMQTT/", topic_value_mqtt);    
+    client.publish("E0/OH/ERR/MQTT/", topic_value_mqtt);    
 #endif   
+	mqtt_is_new_packet_available = 0;
   }
 }
 
