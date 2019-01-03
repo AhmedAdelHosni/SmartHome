@@ -1,4 +1,4 @@
- /******************************************************************************/
+/******************************************************************************/
 /*                Include common and project definition header                */
 /******************************************************************************/
 
@@ -83,12 +83,12 @@ static char mqtt_topic_subscribe     [10] = "OH/E0/#";
 static String mqtt_read_topic_buffer;
 static String mqtt_read_payload_buffer;
 
-static u8 input_pin_number[] = { 22, 23, 24, 25, 26, 27 ,28, 29,
-                                 37, 36, 35, 34, 33, 32, 31, 30,
-                                 49, 48, 47, 46, 45, 44, 43, 42,
-                                 54, 55, 56, 57, 58, 59, 60, 61,
-                                 62, 63, 64, 65, 66, 67, 68, 69
-                                };
+static u8 input_pin_number[]             = { 22, 23, 24, 25, 26, 27 ,28, 29,
+											 37, 36, 35, 34, 33, 32, 31, 30,
+											 49, 48, 47, 46, 45, 44, 43, 42,
+											 54, 55, 56, 57, 58, 59, 60, 61,
+											 62, 63, 64, 65, 66, 67, 68, 69
+											};
          
 static u8 mqtt_topic_to_port_pin[]       = {0, 3, 4, 5,
                                             5,
@@ -127,7 +127,7 @@ byte ip[] = {192, 168, 43, 177};  // <- change to match your network
 void disable_serial_rx(void);
 void process_inputs(void);
 void process_outputs(void);
-void check_mqtt_error(void);
+void check_mqtt_packet_missed(void);
 void TurnOffSwitch(u8 pin_n);
 void TurnOnSwitch(int pin_n);
 void output_toggle(u8 * port_name, u8 pin);
@@ -146,19 +146,13 @@ MQTTClient client;
 /*                       Definition of local functions                        */
 /******************************************************************************/
 
-void toggle_test(u8 pin)
-{
-  Serial.println("In toggle_test");
-  Serial.println(pin); 
-  Serial.println("END toggle_test");
-}
 
 void output_toggle(u8 * port_name, u8 pin)
 {
   *port_name ^= (1UL << pin);
 }
-
 void output_high(u8 * port_name, u8 pin)
+
 {  
   if (pin < 8)
   {
@@ -213,7 +207,13 @@ void setup()
   PORTF = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
   PORTK = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
   
-  DDRE |= B11111100;;// Set port E bit 0,1,3,4,5 to OUTPUT
+  DDRE |= B00111001; // Set port E bit 0,3,4,5 to Output
+  DDRG |= B00010000; // Set port G bit 4 to Output
+  DDRH |= B01111011; // Set port H bit 0,1, to Output
+  DDRB |= B11100000; // Set port B bit 5,6,7 to Output
+  DDRJ |= B00000011; // Set port J bit 0,1 to Output
+  DDRD |= B00001100; // Set port D bit 2,3 to Output
+  
 #endif
 
   Serial.begin(115200);
@@ -232,7 +232,7 @@ void setup()
   client.subscribe(mqtt_topic_subscribe);
 
 
-  client.publish("ETH0/state", "System was restared");
+  client.publish("ETH0/state", "System Started");
 #endif
 }
 void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_start, enum sensor_type sensor_type_e)
@@ -259,17 +259,11 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_star
         {
           ((current_pin_states >> pin_i) & 1) ? (topic_value = "OFF") : (topic_value = "ON");
           ac_parameters_s[pin_start - 24 + pin_i].curr_state = ((current_pin_states >> pin_i) & 1); // put the current ac state in position pin_start - ( 24 which is first pin_start for ac state) + the pin_i
-    /*
-      if(pin_start >= 32)
-      {
-        ac_parameters_k_port.state[pin_i] = ((current_pin_states >> pin_i) & 1);
-      }
-      else if(pin_start >= 24)
-      {
-        ac_parameters_f_port.state[pin_i] = ((current_pin_states >> pin_i) & 1);
-      }
-        */
         }
+		else
+		{
+			
+		}
         
         topic_value.toCharArray(mqtt_publish_topic_value, topic_value.length()+1);
  
@@ -294,29 +288,29 @@ void process_inputs(void)
     publish_updated_pins(port_to_input_PGM[PIN_K], &pin_k_states_previous, 32, STATUS);
 }
 
-void TurnOnSwitch(int pin_n)
+void TurnOnSwitch(u8 pin_n)
 {
- // if(ac_parameters_s[pin_n].curr_state == FALSE)
+  if(ac_parameters_s[pin_n].curr_state == FALSE)
   {
-  //  output_toggle_port[pin_n];
-      output_high(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
+    output_toggle(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
+    //output_high(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
   }
 }
 
 void TurnOffSwitch(u8 pin_n)
 {
- // if(ac_parameters_s[pin_n].curr_state == TRUE)
+  if(ac_parameters_s[pin_n].curr_state == TRUE)
   {
-  //  output_toggle_port[pin_n];
-      output_low(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
+    output_toggle(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
+    //output_low(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
   }
 }
 
 void process_outputs(void)
 {
-  int pin_n;// = mqtt_read_topic_buffer; // Currently this is not correct. Shall extract the pin name from the buffer
-  u8 payload; // = mqtt_read_payload_buffer_buffer;
   String pin_n_s;
+  int pin_n;
+  u8 payload;
   
   if(mqtt_is_new_packet_available != 0)
   {
@@ -327,16 +321,22 @@ void process_outputs(void)
   //  Serial.println(pin_n);
   //  Serial.println(payload);
     
-    if(payload == 1)
+    if(payload == ON)
     {
       TurnOnSwitch(pin_n);
       Serial.println("In ON");
     }
-    else if(payload == 0)
+    else if(payload == OFF)
     {
       TurnOffSwitch(pin_n);
       Serial.println("In OFF");
     }
+	else
+	{
+		/* Do nothing */
+		/* Should not reach here */
+		// TODO : ERRH_ReportErrorToServer();
+	}
 
     if(mqtt_is_new_packet_available > 0)
     {
@@ -347,7 +347,7 @@ void process_outputs(void)
   }
 }
 
-void check_mqtt_error(void)
+void check_mqtt_packet_missed(void)
 {
   char topic_value_mqtt [5];
 
@@ -384,5 +384,5 @@ void loop(void)
   }
   
   process_outputs();
-  check_mqtt_error();
+  check_mqtt_packet_missed();
 }
