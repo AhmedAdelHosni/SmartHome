@@ -90,26 +90,25 @@ static u8 input_pin_number[]             = { 22, 23, 24, 25, 26, 27 ,28, 29,
 											 62, 63, 64, 65, 66, 67, 68, 69
 											};
          
-static u8 mqtt_topic_to_port_pin[]       = {0, 3, 4, 5,
-                                            5,
-                                            0, 1, 3, 4, 5, 6,
-                                            5, 6, 7,
-                                            0, 1,
-                                            2, 3};
+static u8 mqtt_topic_to_port_pin[]       = { 0, 3, 4, 5,
+                                             5,
+                                             0, 1, 3, 4, 5, 6,
+                                             5, 6, 7,
+                                             0, 1,
+                                             2, 3};
 
-const uint16_t mqtt_topic_to_port_name[] = {&PORTE, &PORTE, &PORTE, &PORTE, 
-                                            &PORTG, 
-                                            &PORTH, &PORTH, &PORTH, &PORTH, &PORTH, &PORTH,
-                                            &PORTB, &PORTB, &PORTB,
-                                            &PORTJ, &PORTJ,
-                                            &PORTD, &PORTD};
+const uint16_t mqtt_topic_to_port_name[] = { &PORTE, &PORTE, &PORTE, &PORTE, 
+                                             &PORTG, 
+                                             &PORTH, &PORTH, &PORTH, &PORTH, &PORTH, &PORTH,
+                                             &PORTB, &PORTB, &PORTB,
+                                             &PORTJ, &PORTJ,
+                                             &PORTD, &PORTD};
                                             
-static String input_sensor_type[] = { "D", "D", "D", "D", "D", "D" ,"D", "D",
-                                      "D", "W", "W", "W", "W", "W", "W", "W",
-                                      "W", "W", "M", "M", "M", "M", "M", "M",
-                                      "L", "L", "L", "L", "L", "L", "L", "L",
-                                      "L", "L", "L", "L", "L", "L", "L", "L"
-                                    };
+static String input_sensor_type[]        = { "D", "D", "D", "D", "D", "D" ,"D", "D",
+										     "D", "W", "W", "W", "W", "W", "W", "W",
+											 "W", "W", "M", "M", "M", "M", "M", "M",
+											 "L", "L", "L", "L", "L", "L", "L", "L",
+											 "L", "L", "L", "L", "L", "L", "L", "L"};
 
 static struct ac_parameters ac_parameters_s[18] = {0};
 //static struct ac_parameters ac_parameters_f_port[8] = {0};
@@ -201,18 +200,20 @@ void setup()
 #ifdef ARDUINO_AVR_UNO
   PORTD = 0xFC;    //Set port D pin 7 6 5 4 3 2 as pull up
 #elif ARDUINO_AVR_MEGA2560
-  PORTA = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA
-  PORTC = 0xFF;    //Set port C pin 7 6 5 4 3 2 1 0 as pull up for MEGA
-  PORTL = 0xFF;    //Set port L pin 7 6 5 4 3 2 1 0 as pull up for MEGA
-  PORTF = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
-  PORTK = 0xFF;    //Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
+  PORTA = 0xFF;       // Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA
+  PORTC = 0xFF;       // Set port C pin 7 6 5 4 3 2 1 0 as pull up for MEGA
+  PORTL = 0xFF;       // Set port L pin 7 6 5 4 3 2 1 0 as pull up for MEGA
+  PORTF = 0xFF;       // Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
+  PORTK = 0xFF;       // Set port A pin 7 6 5 4 3 2 1 0 as pull up for MEGA (( ANALOUGE)
+  PORTD |= B10000000; // Set port D pin 7               as pull up for MEGA
+  PORTG |= B00000111; // Set port G pin           2 1 0 as pull up for MEGA
   
-  DDRE |= B00111001; // Set port E bit 0,3,4,5 to Output
-  DDRG |= B00010000; // Set port G bit 4 to Output
-  DDRH |= B01111011; // Set port H bit 0,1, to Output
-  DDRB |= B11100000; // Set port B bit 5,6,7 to Output
-  DDRJ |= B00000011; // Set port J bit 0,1 to Output
-  DDRD |= B00001100; // Set port D bit 2,3 to Output
+  DDRE |= B00111001;  // Set port E bit 0,3,4,5 to Output
+  DDRG |= B00010000;  // Set port G bit 4 to Output
+  DDRH |= B01111011;  // Set port H bit 0,1, to Output
+  DDRB |= B11100000;  // Set port B bit 5,6,7 to Output
+  DDRJ |= B00000011;  // Set port J bit 0,1 to Output
+  DDRD |= B00001100;  // Set port D bit 2,3 to Output
   
 #endif
 
