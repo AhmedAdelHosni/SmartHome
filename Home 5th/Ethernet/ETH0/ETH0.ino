@@ -61,15 +61,18 @@ struct ac_parameters {
   bool curr_state;
 };
 
+struct input_parameters {
+  u8 pin_current_states;
+  u8 pin_previous_states;
+  u8 pin_index_start;
+  u8 pin_index_end;
+  u8 pin_input_start;
+  enum sensor_type sensor_type_e;
+}
+
 /******************************************************************************/
 /*                       Definition of local variables                        */
 /******************************************************************************/
-
-static u8 pin_d_states_previous = 0;
-static u8 pin_c_states_previous = 0;
-static u8 pin_l_states_previous = 0;
-static u8 pin_f_states_previous = 0;
-static u8 pin_k_states_previous = 0;
 
 static u8 mqtt_is_new_packet_available = 0;
 
@@ -84,11 +87,11 @@ static String mqtt_read_topic_buffer;
 static String mqtt_read_payload_buffer;
 
 static u8 input_pin_number[]             = { 22, 23, 24, 25, 26, 27 ,28, 29,
-											 37, 36, 35, 34, 33, 32, 31, 30,
-											 49, 48, 47, 46, 45, 44, 43, 42,
-											 54, 55, 56, 57, 58, 59, 60, 61,
-											 62, 63, 64, 65, 66, 67, 68, 69
-											};
+                       37, 36, 35, 34, 33, 32, 31, 30,
+                       49, 48, 47, 46, 45, 44, 43, 42,
+                       54, 55, 56, 57, 58, 59, 60, 61,
+                       62, 63, 64, 65, 66, 67, 68, 69
+                      };
          
 static u8 mqtt_topic_to_port_pin[]       = { 0, 3, 4, 5,
                                              5,
@@ -105,10 +108,10 @@ const uint16_t mqtt_topic_to_port_name[] = { &PORTE, &PORTE, &PORTE, &PORTE,
                                              &PORTD, &PORTD};
                                             
 static String input_sensor_type[]        = { "D", "D", "D", "D", "D", "D" ,"D", "D",
-										     "D", "W", "W", "W", "W", "W", "W", "W",
-											 "W", "W", "M", "M", "M", "M", "M", "M",
-											 "L", "L", "L", "L", "L", "L", "L", "L",
-											 "L", "L", "L", "L", "L", "L", "L", "L"};
+                         "D", "W", "W", "W", "W", "W", "W", "W",
+                       "W", "W", "M", "M", "M", "M", "M", "M",
+                       "L", "L", "L", "L", "L", "L", "L", "L",
+                       "L", "L", "L", "L", "L", "L", "L", "L"};
 
 static struct ac_parameters ac_parameters_s[18] = {0};
 //static struct ac_parameters ac_parameters_f_port[8] = {0};
@@ -236,7 +239,7 @@ void setup()
   client.publish("ETH0/state", "System Started");
 #endif
 }
-void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_start, enum sensor_type sensor_type_e)
+void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_index_start, u8 input_pin_start, enum sensor_type sensor_type_e)
 {
   String topic_value = "NA";
   
@@ -245,11 +248,11 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_star
     u8 current_pin_states = *pin_states;
     u8 updated_pins       = current_pin_states ^ *pin_states_previous;
 
-    for (u8 pin_i = 0; pin_i <= 7; pin_i++)
+    for (u8 pin_i = pin_index_start; pin_i <= 7; pin_i++)
     {
       if ( (((u8)(updated_pins >> (u8) pin_i)) & (u8)1) != (u8)0 )
       {
-        String topic_name = "/" + String(DEVICE_NAME) + "/" + input_sensor_type[pin_i + pin_start] + "/" + String(input_pin_number[pin_i + pin_start]) + "/";
+        String topic_name = "/" + String(DEVICE_NAME) + "/" + input_sensor_type[pin_i + input_pin_start] + "/" + String(input_pin_number[pin_i + input_pin_start]) + "/";
         topic_name.toCharArray(mqtt_publish_topic_name, topic_name.length()+1);
 
         if(sensor_type_e == CONTACT) // For Contact switches feedback like Doors, Windows & Motion
@@ -259,12 +262,13 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_star
         else if(sensor_type_e == STATUS) // For AC status report feedback to OpenHAB. 
         {
           ((current_pin_states >> pin_i) & 1) ? (topic_value = "OFF") : (topic_value = "ON");
-          ac_parameters_s[pin_start - 24 + pin_i].curr_state = ((current_pin_states >> pin_i) & 1); // put the current ac state in position pin_start - ( 24 which is first pin_start for ac state) + the pin_i
-        }
-		else
-		{
-			
-		}
+      
+      // put the current ac state in position input_pin_start - ( 24 which is first input_pin_start for ac state) + the pin_i
+          ac_parameters_s[input_pin_start - 24 + pin_i].curr_state = ((current_pin_states >> pin_i) & 1);  }
+    else
+    {
+      
+    }
         
         topic_value.toCharArray(mqtt_publish_topic_value, topic_value.length()+1);
  
@@ -282,11 +286,30 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_star
 
 void process_inputs(void)
 {
-    publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous, 0,  CONTACT);
-    publish_updated_pins(port_to_input_PGM[PIN_C], &pin_c_states_previous, 8,  CONTACT);
-    publish_updated_pins(port_to_input_PGM[PIN_L], &pin_l_states_previous, 16, CONTACT);
-    publish_updated_pins(port_to_input_PGM[PIN_F], &pin_f_states_previous, 24, STATUS);
-    publish_updated_pins(port_to_input_PGM[PIN_K], &pin_k_states_previous, 32, STATUS);
+    publish_updated_pins(, &pin_a_states_previous, 0, 0,  CONTACT);
+    publish_updated_pins(port_to_input_PGM[PIN_C], &pin_c_states_previous, 0, 8,  CONTACT);
+    publish_updated_pins(port_to_input_PGM[PIN_L], &pin_l_states_previous, 0, 16, CONTACT);
+    publish_updated_pins(port_to_input_PGM[PIN_F], &pin_f_states_previous, 0, 24, STATUS);
+    publish_updated_pins(port_to_input_PGM[PIN_K], &pin_k_states_previous, 0, 32, STATUS);
+  
+  input_parameters input_parameters_a = {port_to_input_PGM[PIN_A], 0, 0};
+  input_parameters input_parameters_c = {};
+  input_parameters input_parameters_l = {};
+  input_parameters input_parameters_f = {};
+  input_parameters input_parameters_k = {};
+  input_parameters input_parameters_d = {};
+  input_parameters input_parameters_g = {};
+  /*
+  struct input_parameters {
+    u8 pin_current_states;
+    u8 pin_previous_states;
+    u8 pin_index_start;
+    u8 pin_index_end;
+    u8 pin_input_start;
+    enum sensor_type sensor_type_e;
+  }
+  */
+
 }
 
 void TurnOnSwitch(u8 pin_n)
@@ -332,12 +355,12 @@ void process_outputs(void)
       TurnOffSwitch(pin_n);
       Serial.println("In OFF");
     }
-	else
-	{
-		/* Do nothing */
-		/* Should not reach here */
-		// TODO : ERRH_ReportErrorToServer();
-	}
+  else
+  {
+    /* Do nothing */
+    /* Should not reach here */
+    // TODO : ERRH_ReportErrorToServer();
+  }
 
     if(mqtt_is_new_packet_available > 0)
     {
@@ -360,7 +383,7 @@ void check_mqtt_packet_missed(void)
     itoa(mqtt_is_new_packet_available, topic_value_mqtt, 5);
     client.publish("E0/OH/ERR/MQTT/", topic_value_mqtt);    
 #endif   
-	mqtt_is_new_packet_available = 0;
+  mqtt_is_new_packet_available = 0;
   }
 }
 
