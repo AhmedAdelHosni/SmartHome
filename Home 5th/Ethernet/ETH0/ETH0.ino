@@ -27,6 +27,13 @@
 #define DEVICE_NAME                 "E0" // Ethernet node 0
 #define INTERVAL_PERIOD_50_MS       50
 
+#ifndef cbi
+  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+
 //#define OUTPUT_TOGGLE(port_name, pin) (port_name ^= (1UL << pin))
 /******************************************************************************/
 /*                  Definition of local function like macros                  */
@@ -61,18 +68,15 @@ struct ac_parameters {
   bool curr_state;
 };
 
-struct input_parameters {
-  u8 pin_current_states;
-  u8 pin_previous_states;
-  u8 pin_index_start;
-  u8 pin_index_end;
-  u8 pin_input_start;
-  enum sensor_type sensor_type_e;
-}
-
 /******************************************************************************/
 /*                       Definition of local variables                        */
 /******************************************************************************/
+
+static u8 pin_d_states_previous = 0;
+static u8 pin_c_states_previous = 0;
+static u8 pin_l_states_previous = 0;
+static u8 pin_f_states_previous = 0;
+static u8 pin_k_states_previous = 0;
 
 static u8 mqtt_is_new_packet_available = 0;
 
@@ -119,8 +123,8 @@ static struct ac_parameters ac_parameters_s[18] = {0};
 
 #ifdef ETHERNET_CONN
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-//byte ip[] = {192, 168, 100, 177};  // <- change to match your network
-byte ip[] = {192, 168, 43, 177};  // <- change to match your network
+byte ip[] = {192, 168, 100, 177};  // <- change to match your network
+//byte ip[] = {192, 168, 43, 177};  // <- change to match your network
 #endif
 /******************************************************************************/
 /*                  Declaration of local function prototypes                  */
@@ -130,8 +134,8 @@ void disable_serial_rx(void);
 void process_inputs(void);
 void process_outputs(void);
 void check_mqtt_packet_missed(void);
-void TurnOffSwitch(u8 pin_n);
-void TurnOnSwitch(int pin_n);
+void TurnOffSwitch(u8 pin_n, u8 pin_status);
+void TurnOnSwitch(u8 pin_n, u8 pin_status);
 void output_toggle(u8 * port_name, u8 pin);
 void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_start, enum sensor_type sensor_type_e);
 
@@ -184,17 +188,24 @@ void connect() {
 
 #ifdef ETHERNET_CONN
 void mqtt_message_received(String &topic, String &payload) {
-  Serial.println("incoming: " + topic + " - " + payload);
+  Serial.print("incoming: " + topic + " - " + payload + " - ");
+  Serial.println(millis());
   mqtt_read_topic_buffer = topic;
   mqtt_read_payload_buffer = payload;
-  mqtt_is_new_packet_available = mqtt_is_new_packet_available + 1;
+ // mqtt_is_new_packet_available = mqtt_is_new_packet_available + 1;
+  
+    Serial.print("Millis Start : ");
+    Serial.println(millis());
+  process_outputs();
+    Serial.print("Millis End : ");
+    Serial.println(millis());
 }
 #endif
 
 void disable_serial_rx(void)
 {
-  cbi(*_ucsrb, RXEN0);
-  cbi(*_ucsrb, RXCIE0);
+  cbi(UCSR0B, RXEN0);
+  cbi(UCSR0B, RXCIE0);
 }
 
 void setup()
@@ -212,7 +223,7 @@ void setup()
   PORTG |= B00000111; // Set port G pin           2 1 0 as pull up for MEGA
   
   DDRE |= B00111001;  // Set port E bit 0,3,4,5 to Output
-  DDRG |= B00010000;  // Set port G bit 4 to Output
+  DDRG |= B00100000;  // Set port G bit 4 to Output
   DDRH |= B01111011;  // Set port H bit 0,1, to Output
   DDRB |= B11100000;  // Set port B bit 5,6,7 to Output
   DDRJ |= B00000011;  // Set port J bit 0,1 to Output
@@ -228,8 +239,8 @@ void setup()
 
   // Note: Local domain names (e.g. "Computer.local" on OSX) are not supported by Arduino.
   // You need to set the IP address directly.
- // client.begin("192.168.100.106", net);
-  client.begin("192.168.43.200", net);
+  client.begin("192.168.100.106", net);
+ // client.begin("192.168.43.200", net);
   client.onMessage(mqtt_message_received);
 
   connect();
@@ -239,7 +250,7 @@ void setup()
   client.publish("ETH0/state", "System Started");
 #endif
 }
-void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_index_start, u8 input_pin_start, enum sensor_type sensor_type_e)
+void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_start, enum sensor_type sensor_type_e)
 {
   String topic_value = "NA";
   
@@ -248,11 +259,11 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_inde
     u8 current_pin_states = *pin_states;
     u8 updated_pins       = current_pin_states ^ *pin_states_previous;
 
-    for (u8 pin_i = pin_index_start; pin_i <= 7; pin_i++)
+    for (u8 pin_i = 0; pin_i <= 7; pin_i++)
     {
       if ( (((u8)(updated_pins >> (u8) pin_i)) & (u8)1) != (u8)0 )
       {
-        String topic_name = "/" + String(DEVICE_NAME) + "/" + input_sensor_type[pin_i + input_pin_start] + "/" + String(input_pin_number[pin_i + input_pin_start]) + "/";
+        String topic_name = String(DEVICE_NAME) + "/" + input_sensor_type[pin_i + pin_start] + "/" + String(input_pin_number[pin_i + pin_start]) + "/state";
         topic_name.toCharArray(mqtt_publish_topic_name, topic_name.length()+1);
 
         if(sensor_type_e == CONTACT) // For Contact switches feedback like Doors, Windows & Motion
@@ -261,10 +272,10 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_inde
         }
         else if(sensor_type_e == STATUS) // For AC status report feedback to OpenHAB. 
         {
-          ((current_pin_states >> pin_i) & 1) ? (topic_value = "OFF") : (topic_value = "ON");
-      
-      // put the current ac state in position input_pin_start - ( 24 which is first input_pin_start for ac state) + the pin_i
-          ac_parameters_s[input_pin_start - 24 + pin_i].curr_state = ((current_pin_states >> pin_i) & 1);  }
+         // ((current_pin_states >> pin_i) & 1) ? (topic_value = "OFF") : (topic_value = "ON");
+         ((current_pin_states >> pin_i) & 1) ? (topic_value = "ON") : (topic_value = "OFF");
+          ac_parameters_s[pin_start - 24 + pin_i].curr_state = ((current_pin_states >> pin_i) & 1); // put the current ac state in position pin_start - ( 24 which is first pin_start for ac state) + the pin_i
+        }
     else
     {
       
@@ -276,7 +287,6 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_inde
         Serial.println(topic_value);
 #ifdef ETHERNET_CONN
         client.publish(mqtt_publish_topic_name , mqtt_publish_topic_value);
-        client.publish("testsw/1", "OFF");
 #endif
       }
     }
@@ -286,74 +296,72 @@ void publish_updated_pins(u8 * pin_states, u8 * pin_states_previous, u8 pin_inde
 
 void process_inputs(void)
 {
-    publish_updated_pins(, &pin_a_states_previous, 0, 0,  CONTACT);
-    publish_updated_pins(port_to_input_PGM[PIN_C], &pin_c_states_previous, 0, 8,  CONTACT);
-    publish_updated_pins(port_to_input_PGM[PIN_L], &pin_l_states_previous, 0, 16, CONTACT);
-    publish_updated_pins(port_to_input_PGM[PIN_F], &pin_f_states_previous, 0, 24, STATUS);
-    publish_updated_pins(port_to_input_PGM[PIN_K], &pin_k_states_previous, 0, 32, STATUS);
-  
-  input_parameters input_parameters_a = {port_to_input_PGM[PIN_A], 0, 0};
-  input_parameters input_parameters_c = {};
-  input_parameters input_parameters_l = {};
-  input_parameters input_parameters_f = {};
-  input_parameters input_parameters_k = {};
-  input_parameters input_parameters_d = {};
-  input_parameters input_parameters_g = {};
-  /*
-  struct input_parameters {
-    u8 pin_current_states;
-    u8 pin_previous_states;
-    u8 pin_index_start;
-    u8 pin_index_end;
-    u8 pin_input_start;
-    enum sensor_type sensor_type_e;
-  }
-  */
-
+    publish_updated_pins(port_to_input_PGM[PIN_A], &pin_d_states_previous, 0,  CONTACT);
+    publish_updated_pins(port_to_input_PGM[PIN_C], &pin_c_states_previous, 8,  CONTACT);
+    publish_updated_pins(port_to_input_PGM[PIN_L], &pin_l_states_previous, 16, CONTACT);
+    publish_updated_pins(port_to_input_PGM[PIN_F], &pin_f_states_previous, 24, STATUS);
+    publish_updated_pins(port_to_input_PGM[PIN_K], &pin_k_states_previous, 32, STATUS);
 }
 
-void TurnOnSwitch(u8 pin_n)
+void TurnOnSwitch(u8 pin_n, u8 pin_status)
 {
-  if(ac_parameters_s[pin_n].curr_state == FALSE)
+  if(ac_parameters_s[pin_status].curr_state == FALSE)
   {
     output_toggle(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
-    //output_high(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
+//    output_high(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
   }
 }
 
-void TurnOffSwitch(u8 pin_n)
+void TurnOffSwitch(u8 pin_n, u8 pin_status)
 {
-  if(ac_parameters_s[pin_n].curr_state == TRUE)
+  if(ac_parameters_s[pin_status].curr_state == TRUE)
   {
     output_toggle(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
-    //output_low(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
+   // output_low(mqtt_topic_to_port_name[pin_n], mqtt_topic_to_port_pin[pin_n]);
   }
 }
 
 void process_outputs(void)
 {
-  String pin_n_s;
-  int pin_n;
+  String pin_status_str;
+  String pin_relay_str;
+  u8 pin_status_u8;
+  u8 pin_relay_u8;
   u8 payload;
   
-  if(mqtt_is_new_packet_available != 0)
+ // if(mqtt_is_new_packet_available != 0)
   {
-    pin_n_s = mqtt_read_topic_buffer.substring(11, mqtt_read_topic_buffer.lastIndexOf("/"));
-    pin_n   = pin_n_s.toInt();
+ //   Serial.print("Millis Starts : ");
+  //  Serial.println(millis());
+    pin_status_str = mqtt_read_topic_buffer.substring(8, mqtt_read_topic_buffer.lastIndexOf("/"));
+    pin_relay_str  = mqtt_read_topic_buffer.substring(11, mqtt_read_topic_buffer.lastIndexOf("/"));
+
+    pin_status_u8 = pin_status_str.toInt();
+    pin_status_u8 = pin_status_u8 - 54;
+    pin_relay_u8  = pin_relay_str.toInt();
     payload = mqtt_read_payload_buffer.toInt();
 
   //  Serial.println(pin_n);
   //  Serial.println(payload);
-    
-    if(payload == ON)
+
+    if(pin_relay_u8 == 30)
     {
-      TurnOnSwitch(pin_n);
-      Serial.println("In ON");
+      for(int i = 0 ; i < 18 ;  i++)
+      {
+        Serial.print(i);
+        Serial.print(" : ");
+        Serial.println(ac_parameters_s[i].curr_state);
+      }
+    }
+    else if(payload == ON)
+    {
+      TurnOnSwitch(pin_relay_u8, pin_status_u8);
+ //     Serial.println("In ON");
     }
     else if(payload == OFF)
     {
-      TurnOffSwitch(pin_n);
-      Serial.println("In OFF");
+      TurnOffSwitch(pin_relay_u8, pin_status_u8);
+  //    Serial.println("In OFF");
     }
   else
   {
@@ -366,8 +374,11 @@ void process_outputs(void)
     {
       mqtt_is_new_packet_available = mqtt_is_new_packet_available - 1;
     }
+        
+  //  Serial.print("Millis End : ");
+  //  Serial.println(millis());
 
-    Serial.println("%%%%%%%");
+   // Serial.println("%%%%%%%");
   }
 }
 
@@ -395,8 +406,19 @@ void loop(void)
   client.loop();
   
   if (!client.connected()) {
-    connect();
-  }
+  Ethernet.begin(mac, ip);
+
+  // Note: Local domain names (e.g. "Computer.local" on OSX) are not supported by Arduino.
+  // You need to set the IP address directly.
+  client.begin("192.168.100.106", net);
+ // client.begin("192.168.43.200", net);
+  client.onMessage(mqtt_message_received);
+
+  connect();
+  client.subscribe(mqtt_topic_subscribe);
+
+
+  client.publish("ETH0/state", "System Started");  }
 #endif
 
    
@@ -407,6 +429,5 @@ void loop(void)
     process_inputs();
   }
   
-  process_outputs();
   check_mqtt_packet_missed();
 }
