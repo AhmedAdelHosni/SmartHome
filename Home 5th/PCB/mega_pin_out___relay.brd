@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="7.7.0">
+<eagle version="7.3.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -146,10 +146,7 @@
 <wire x1="100" y1="0" x2="100" y2="85" width="0" layer="20"/>
 <wire x1="100" y1="85" x2="0" y2="85" width="0" layer="20"/>
 <wire x1="0" y1="85" x2="0" y2="0" width="0" layer="20"/>
-<dimension x1="37.8968" y1="77.3176" x2="0.6096" y2="46.5328" x3="6.7056" y3="61.9252" textsize="1.778" layer="1" dtype="vertical"/>
-<dimension x1="0" y1="85" x2="28.5496" y2="32.004" x3="-1.6256" y3="58.502" textsize="1.778" layer="1" dtype="vertical"/>
-<dimension x1="0" y1="0" x2="0" y2="32.004" x3="-3.7592" y3="16.002" textsize="1.778" layer="1"/>
-<text x="0.60198125" y="58.7248" size="3.3528" layer="26" rot="R270">22
+<text x="0.60198125" y="58.7248" size="3.3528" layer="25" rot="R270">22
 24
 26
 28
@@ -169,7 +166,7 @@ G
 5V
 46
 48</text>
-<text x="0.6858" y="74.744578125" size="3.3528" layer="26" rot="R270">23
+<text x="0.6858" y="74.744578125" size="3.3528" layer="25" rot="R270">23
 25
 27
 29
@@ -195,8 +192,6 @@ G
 <text x="96.0526375" y="69.032121875" size="3.3528" layer="26" rot="R270">PL-</text>
 <text x="61.866778125" y="68.684140625" size="1.9558" layer="26" rot="R270">Light</text>
 <text x="17.233" y="7.3866" size="1" layer="25" rot="R270">GND/SGN</text>
-<hole x="25" y="27.75" drill="0.5"/>
-<hole x="25" y="27.25" drill="0.5"/>
 <hole x="21.06" y="32" drill="0.5"/>
 <hole x="21.56" y="32" drill="0.5"/>
 <hole x="5.96" y="32" drill="0.5"/>
@@ -235,16 +230,7 @@ G
 <wire x1="24.55" y1="20.57" x2="24.63" y2="20.65" width="0.254" layer="20"/>
 <wire x1="24.63" y1="20.65" x2="24.59" y2="21.38" width="0.254" layer="20"/>
 <wire x1="24.59" y1="21.38" x2="24.48" y2="21.49" width="0.254" layer="20"/>
-<hole x="0" y="0" drill="0.5"/>
-<hole x="25" y="0.5" drill="0.5"/>
-<hole x="25" y="12.5" drill="0.5"/>
-<hole x="25" y="16.5" drill="0.5"/>
-<hole x="25" y="22.5" drill="0.5"/>
-<hole x="0" y="19" drill="0.5"/>
-<hole x="0" y="14" drill="0.5"/>
 <text x="42.233" y="7.3866" size="1" layer="25" rot="R270">GND/SGN</text>
-<hole x="50" y="27.75" drill="0.5"/>
-<hole x="50" y="27.25" drill="0.5"/>
 <hole x="46.06" y="32" drill="0.5"/>
 <hole x="46.56" y="32" drill="0.5"/>
 <hole x="30.96" y="32" drill="0.5"/>
@@ -283,24 +269,7 @@ G
 <wire x1="49.55" y1="20.57" x2="49.63" y2="20.65" width="0.254" layer="20"/>
 <wire x1="49.63" y1="20.65" x2="49.59" y2="21.38" width="0.254" layer="20"/>
 <wire x1="49.59" y1="21.38" x2="49.48" y2="21.49" width="0.254" layer="20"/>
-<hole x="25" y="31" drill="0.5"/>
-<hole x="25" y="30.5" drill="0.5"/>
-<hole x="25" y="30" drill="0.5"/>
-<hole x="37" y="0" drill="0.5"/>
-<hole x="38" y="0" drill="0.5"/>
-<hole x="30" y="0" drill="0.5"/>
-<hole x="25" y="0" drill="0.5"/>
-<hole x="50" y="0.5" drill="0.5"/>
-<hole x="50" y="12.5" drill="0.5"/>
-<hole x="50" y="16.5" drill="0.5"/>
-<hole x="50" y="22.5" drill="0.5"/>
-<hole x="25" y="19" drill="0.5"/>
-<hole x="25" y="14" drill="0.5"/>
-<hole x="0" y="16.5" drill="0.5"/>
-<hole x="0" y="16" drill="0.5"/>
 <text x="67.233" y="7.3866" size="1" layer="25" rot="R270">GND/SGN</text>
-<hole x="75" y="27.75" drill="0.5"/>
-<hole x="75" y="27.25" drill="0.5"/>
 <hole x="71.06" y="32" drill="0.5"/>
 <hole x="71.56" y="32" drill="0.5"/>
 <hole x="55.96" y="32" drill="0.5"/>
@@ -339,22 +308,7 @@ G
 <wire x1="74.55" y1="20.57" x2="74.63" y2="20.65" width="0.254" layer="20"/>
 <wire x1="74.63" y1="20.65" x2="74.59" y2="21.38" width="0.254" layer="20"/>
 <wire x1="74.59" y1="21.38" x2="74.48" y2="21.49" width="0.254" layer="20"/>
-<hole x="50" y="31" drill="0.5"/>
-<hole x="50" y="30.5" drill="0.5"/>
-<hole x="50" y="30" drill="0.5"/>
-<hole x="62" y="0" drill="0.5"/>
-<hole x="63" y="0" drill="0.5"/>
-<hole x="55" y="0" drill="0.5"/>
-<hole x="50" y="0" drill="0.5"/>
-<hole x="75" y="0.5" drill="0.5"/>
-<hole x="75" y="12.5" drill="0.5"/>
-<hole x="75" y="16.5" drill="0.5"/>
-<hole x="75" y="22.5" drill="0.5"/>
-<hole x="50" y="19" drill="0.5"/>
-<hole x="50" y="14" drill="0.5"/>
 <text x="92.233" y="7.3866" size="1" layer="25" rot="R270">GND/SGN</text>
-<hole x="100" y="27.75" drill="0.5"/>
-<hole x="100" y="27.25" drill="0.5"/>
 <hole x="96.06" y="32" drill="0.5"/>
 <hole x="96.56" y="32" drill="0.5"/>
 <hole x="80.96" y="32" drill="0.5"/>
@@ -393,19 +347,6 @@ G
 <wire x1="99.55" y1="20.57" x2="99.63" y2="20.65" width="0.254" layer="20"/>
 <wire x1="99.63" y1="20.65" x2="99.59" y2="21.38" width="0.254" layer="20"/>
 <wire x1="99.59" y1="21.38" x2="99.48" y2="21.49" width="0.254" layer="20"/>
-<hole x="75" y="31" drill="0.5"/>
-<hole x="75" y="30.5" drill="0.5"/>
-<hole x="75" y="30" drill="0.5"/>
-<hole x="87" y="0" drill="0.5"/>
-<hole x="88" y="0" drill="0.5"/>
-<hole x="80" y="0" drill="0.5"/>
-<hole x="75" y="0" drill="0.5"/>
-<hole x="100" y="0.5" drill="0.5"/>
-<hole x="100" y="12.5" drill="0.5"/>
-<hole x="100" y="16.5" drill="0.5"/>
-<hole x="100" y="22.5" drill="0.5"/>
-<hole x="75" y="19" drill="0.5"/>
-<hole x="75" y="14" drill="0.5"/>
 </plain>
 <libraries>
 <library name="con-ptr500">
