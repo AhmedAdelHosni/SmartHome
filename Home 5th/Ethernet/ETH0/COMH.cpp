@@ -57,6 +57,7 @@ u32 set_led_state_bitfields;
 /******************************************************************************/
 
 void StartEthernetConnection(void) ;
+void UpdateLedStates(u8 relay_index, u8 relay_new_state);
 
 /******************************************************************************/
 /*                        Declaration of local Objects                        */
@@ -71,16 +72,22 @@ MQTTClient client;
 /*                       Definition of local functions                        */
 /******************************************************************************/
 
-#ifdef ETHERNET_CONN
-
 void mqtt_recieved_buffer(String &topic, String &payload) {
-    mqtt_read_topic_buffer = topic;
-    mqtt_read_payload_buffer = payload;
+    String relay_index_str;    
+    u8 relay_index_u8;
+    u8 relay_index_new_state_u8;
+
+    relay_index_str = topic.substring(8, payload.lastIndexOf("/"));
+    relay_index_u8 = relay_index_str.toInt();
+
+    relay_index_new_state_u8 = mqtt_read_payload_buffer.toInt();
+
+    UpdateLedStates(relay_index_u8, relay_index_new_state_u8);
 }
 
 void StartEthernetConnection(void) 
 {
-    DEBUG_SERIAL("connecting");
+    DEBUG_SERIAL("Connecting");
 
     while (!ConnectToClient()) 
     {
@@ -91,7 +98,7 @@ void StartEthernetConnection(void)
     DEBUG_SERIAL_NL("\nconnected!");
 }
 
-void COMH_INIT()
+void COMH_INIT(void)
 {
     BeginEthernetCommunication();
     BeginClientCommunication(); 
@@ -105,6 +112,19 @@ void COMH_PublishMQTT(const String topic, const String payload)
     client.publish(topic, payload);
 }
 
+void UpdateLedStates(u8 relay_index, u8 relay_new_state)
+{
+    if(relay_new_state == 1)
+    {
+        set_led_state_bitfields |= (u32)((u32)1<<(u32) relay_index);
+    }
+    else if(relay_new_state == 0)
+    {
+        set_led_state_bitfields &= ~(1 <<(u32) relay_index);
+    }
+}
 
-
-#endif
+u32 COMH_GetLedStates(void)
+{
+    return set_led_state_bitfields;
+}

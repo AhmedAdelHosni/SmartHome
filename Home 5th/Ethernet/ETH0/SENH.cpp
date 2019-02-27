@@ -69,6 +69,8 @@ struct input_parameters_per_pin {
 static char mqtt_publish_topic_name  [50];
 static char mqtt_publish_topic_value [50]; 
    
+   // TODO : Divide into two arrays. One for Contact and one for Status to avoid the subtractions 
+   // being done during proccessing.
 static String input_pin_number[]          = { "22", "23", "24", "25", "26", "27", "28", "29",
                                               "37", "36", "35", "34", "33", "32", "31", "30",
                                               "49", "48", "47", "46", "45", "44", "43", "42",
@@ -115,7 +117,7 @@ void PublishUpdatedInputs(String input_sensor_type_param, String input_pin_numbe
 /*                       Definition of local functions                        */
 /******************************************************************************/
 
-void SENH_Cyclic50ms(void)
+void SENH_Cyclic(void)
 {
     ProcessInputs();
 }
@@ -150,7 +152,7 @@ void ProcessUpdatedPinsIndividually(struct input_parameters_per_pin* param)
         else if(param->sensor_type_e == STATUS)
         {
             (((current_pin_states >> param->port_pin_x) & 1) != 0) ? (topic_value = "OFF") : (topic_value = "ON");
-            pin_state_status[param->port_input_pin_array_index - 23] = ((current_pin_states >> param->port_pin_x) & 1);
+            pin_state_status[param->port_input_pin_array_index - 25] = ((current_pin_states >> param->port_pin_x) & 1);
         }
         
         PublishUpdatedInputs(input_sensor_type[param->port_input_pin_array_index], 
@@ -165,8 +167,6 @@ void ProcessUpdatedPins(struct input_parameters* param)
 {
     String topic_value;
     u8 pin_current_states = *IOHW_GetPortPinStatus(param->port_name);
- //   DEBUG_SERIAL_NL(pin_current_states);
-
     
     if( ( (pin_current_states) ^ (param->pin_previous_states) ) != 0)
     {
@@ -183,7 +183,6 @@ void ProcessUpdatedPins(struct input_parameters* param)
                 }
                 else if(param->sensor_type_e == STATUS) // For AC status report feedback to OpenHAB. 
                 {
-                // ((current_pin_states >> pin_i) & 1) ? (topic_value = "OFF") : (topic_value = "ON");
                     ((current_pin_states >> pin_i) & 1) ? (topic_value = "OFF") : (topic_value = "ON"); // relay
                     pin_state_status[param->pin_input_start - 24 + pin_i] = ((current_pin_states >> pin_i) & 1); // put the current ac state in position pin_start - ( 24 which is first pin_start for ac state) + the pin_i
                 }
@@ -216,7 +215,14 @@ void PublishUpdatedInputs(String input_sensor_type_param, String input_pin_numbe
 #endif
 }
 
-u8 * SENH_GetACStates()
+u8* SENH_GetLedStates() 
 {
-    return pin_state_status;
+    static u8 pin_states_param[18];
+    
+    for(int i = 0; i < 18; i++)
+    {
+        pin_states_param[i] = pin_state_status[i];
+    }
+ 
+    return pin_states_param;
 }

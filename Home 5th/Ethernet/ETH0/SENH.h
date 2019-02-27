@@ -1,7 +1,7 @@
 #ifndef I_SENH
 #define I_SENH
 
-void SENH_Cyclic50ms(void);
-u8 * SENH_GetACStates();
+void SENH_Cyclic(void);
+u8 * SENH_GetLedStates();
 
 #endif /* I_SENH */

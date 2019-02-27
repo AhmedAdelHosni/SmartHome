@@ -12,6 +12,7 @@
 #include "COMH.h"
 #include "IoHw.h"
 #include "SENH.h"
+#include "LEDH.h"
 
 /******************************************************************************/
 /*                            Include other headers                           */
@@ -73,6 +74,8 @@ void loop(void)
   {
     previous_millis_50ms = millis();
     
-    SENH_Cyclic50ms();
+    SENH_Cyclic();
+    LEDH_Input();
+    LEDH_Cyclic();
   }
 }
