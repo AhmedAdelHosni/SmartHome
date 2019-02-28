@@ -26,6 +26,14 @@
 /*                  Definition of local function like macros                  */
 /******************************************************************************/
 
+#define CYCLE_TIME                          50
+#define MAX_NUM_OF_OUTPUTS                  18
+#define LED_STATE_UPDATE_INTERVAL           200
+#define DEBOUNCE_LED_STATE_INTERVAL         LED_STATE_UPDATE_INTERVAL / CYCLE_TIME
+
+#define ON                                  1
+#define OFF                                 0
+
 /******************************************************************************/
 /*          Definition of local types (typedef, enum, struct, union)          */
 /******************************************************************************/
@@ -33,6 +41,10 @@
 /******************************************************************************/
 /*                       Definition of local variables                        */
 /******************************************************************************/
+
+// TODO : implement in LEDH_Init() all initializations
+
+static u8 new_led_states [18] = {0};
 
 static u8 port_pin[]       = { 0, 3, 4, 5,
                                5,
@@ -48,10 +60,17 @@ const uint16_t port_name[] = { &PORTE, &PORTE, &PORTE, &PORTE,
                                &PORTJ, &PORTJ,
                                &PORTD, &PORTD};
 
-static u32 previous_led_states = 0;
-static u32 current_led_states  = 0;
+static u32 previous_led_states   = 0;
+static u32 requested_led_states  = 0;
+static u32 confirmed_led_states  = 0;
 
-static u8 * ac_states = 0;
+// TODO : Init all values with 0 in a loop
+static u8 * ac_states;
+
+static bool_T is_new_led_states_available = FALSE;
+
+static u8 led_state_index_counter = 0;
+static u8 led_state_debounce = 0;
 
 /******************************************************************************/
 /*                  Declaration of local function prototypes                  */
@@ -60,6 +79,7 @@ static u8 * ac_states = 0;
 
 void TurnOnRelay(u8 pin_n);
 void TurnOffRelay(u8 pin_n);
+void UpdateNewLedStates(u8 pin_i, u8 new_state);
 
 /******************************************************************************/
 /*                        Declaration of local Objects                        */
@@ -69,37 +89,90 @@ void TurnOffRelay(u8 pin_n);
 /*                       Definition of local functions                        */
 /******************************************************************************/
 
+void LEDH_Init(void)
+{
 
+}
 
 void LEDH_Input(void)
 {
-    ac_states  = SENH_GetLedStates();
+    ac_states  = SENH_GetCurrentLedStates();    
+    requested_led_states  = COMH_GetRequestedLedStates();
+    confirmed_led_states  = COMH_GetConfirmedLedStates();
+
+    if(requested_led_states != previous_led_states)
+    {
+        is_new_led_states_available = TRUE;
+    }
 }
 
 void LEDH_Cyclic(void)
 {
-    current_led_states  = COMH_GetLedStates();
-
-    if(current_led_states != previous_led_states)
+    if(is_new_led_states_available != FALSE)
     {    
-        u32 updated_pins = current_led_states ^ previous_led_states;
+        u32 updated_pins = requested_led_states ^ previous_led_states;
 
-        for (u8 pin_i = 0; pin_i <= 17; pin_i++)
+        for (u8 pin_i = 0; pin_i < MAX_NUM_OF_OUTPUTS; pin_i++)
         {
-            if ( (((u32)(updated_pins >> (u32) pin_i)) & (u32)1) != (u32)0 )
+            if ( (((u32)(confirmed_led_states >> (u32) pin_i)) & (u32)1) != (u32)0 )
             {
-                if(((current_led_states >> pin_i) & 1) != FALSE)
+                if(((requested_led_states >> pin_i) & 1) != FALSE)
                 {
-                    TurnOnRelay(pin_i);
+                    UpdateNewLedStates(pin_i, 1);
                 }
                 else
                 {
-                    TurnOffRelay(pin_i);
+                    UpdateNewLedStates(pin_i, 0);
                 }                
             }
         }
-        previous_led_states = current_led_states;
+        previous_led_states = requested_led_states;
     }
+}
+
+void LEDH_Output(void)
+{
+    if(is_new_led_states_available != FALSE)
+    {
+        led_state_debounce = DEBOUNCE_LED_STATE_INTERVAL;
+        led_state_index_counter = 0;
+        is_new_led_states_available = FALSE;
+    }
+
+    if(led_state_index_counter < MAX_NUM_OF_OUTPUTS)
+    {
+        if(led_state_debounce < DEBOUNCE_LED_STATE_INTERVAL)
+        {
+            led_state_debounce = led_state_debounce + 1;
+            led_state_debounce = 0;
+        }
+        else
+        {
+            if ( (((u32)(confirmed_led_states >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
+            {
+                if(new_led_states[led_state_index_counter] == ON)
+                {
+                    TurnOnRelay(led_state_index_counter);
+                }
+                else if(new_led_states[led_state_index_counter] == OFF)
+                {
+                    TurnOffRelay(led_state_index_counter);
+                }
+                else
+                {
+                    
+                }
+            }
+            
+            led_state_index_counter++;
+        }
+        
+    }
+}
+
+void UpdateNewLedStates(u8 pin_i, u8 new_state)
+{
+    new_led_states[pin_i] = new_state;
 }
 
 void TurnOnRelay(u8 pin_n)

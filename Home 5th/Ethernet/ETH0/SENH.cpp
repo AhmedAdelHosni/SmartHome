@@ -66,11 +66,12 @@ struct input_parameters_per_pin {
 /*                       Definition of local variables                        */
 /******************************************************************************/
 
+  // TODO : implement in SENH_Init() all initializations
+
 static char mqtt_publish_topic_name  [50];
 static char mqtt_publish_topic_value [50]; 
    
-   // TODO : Divide into two arrays. One for Contact and one for Status to avoid the subtractions 
-   // being done during proccessing.
+
 static String input_pin_number[]          = { "22", "23", "24", "25", "26", "27", "28", "29",
                                               "37", "36", "35", "34", "33", "32", "31", "30",
                                               "49", "48", "47", "46", "45", "44", "43", "42",
@@ -116,6 +117,11 @@ void PublishUpdatedInputs(String input_sensor_type_param, String input_pin_numbe
 /******************************************************************************/
 /*                       Definition of local functions                        */
 /******************************************************************************/
+
+void SENH_Init(void)
+{
+
+}
 
 void SENH_Cyclic(void)
 {
@@ -215,7 +221,7 @@ void PublishUpdatedInputs(String input_sensor_type_param, String input_pin_numbe
 #endif
 }
 
-u8* SENH_GetLedStates() 
+u8* SENH_GetCurrentLedStates() 
 {
     static u8 pin_states_param[18];
     

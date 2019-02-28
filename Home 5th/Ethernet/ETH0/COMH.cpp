@@ -50,7 +50,8 @@ static char mqtt_topic_subscribe[MAX_MQTT_SUBSRIBE_SIZE] = MQTT_TOPIC_SUBSCRIBE_
 static String mqtt_read_topic_buffer;
 static String mqtt_read_payload_buffer;
 
-u32 set_led_state_bitfields;
+static u32 set_led_state_bitfields = 0;
+static u32 update_current_led_state = 0;
 
 /******************************************************************************/
 /*                  Declaration of local function prototypes                  */
@@ -122,9 +123,16 @@ void UpdateLedStates(u8 relay_index, u8 relay_new_state)
     {
         set_led_state_bitfields &= ~(1 <<(u32) relay_index);
     }
+        
+    update_current_led_state |= (u32)((u32)1<<(u32) relay_index);
 }
 
-u32 COMH_GetLedStates(void)
+u32 COMH_GetRequestedLedStates(void)
 {
     return set_led_state_bitfields;
+}
+
+u32 COMH_GetConfirmedLedStates(void)
+{
+    return update_current_led_state;
 }

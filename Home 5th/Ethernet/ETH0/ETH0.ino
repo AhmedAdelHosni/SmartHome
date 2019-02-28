@@ -63,6 +63,8 @@ void setup()
 #ifdef ETHERNET_CONN
   COMH_INIT();
   COMH_PublishMQTT("ETH0/State/", "System is started");
+  SENH_Init();
+  LEDH_Init();
 #endif
 }
 
@@ -73,9 +75,10 @@ void loop(void)
   if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
   {
     previous_millis_50ms = millis();
-    
+
     SENH_Cyclic();
     LEDH_Input();
     LEDH_Cyclic();
+    LEDH_Output();
   }
 }
