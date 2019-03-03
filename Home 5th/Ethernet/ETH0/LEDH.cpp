@@ -125,37 +125,14 @@ void LEDH_Cyclic50ms(void)
 
 void LEDH_Input(void)
 {
-    ac_states  = SENH_GetCurrentLedStates();    
-    requested_led_state_values  = COMH_GetRequestedLedStateValues();
+    ac_states  = SENH_GetCurrentLedStates();     
     requested_leds  = COMH_GetRequestedLeds();
-
-    if(requested_led_state_values != previous_led_states)
-    {
-        is_new_led_states_available = TRUE;
-    }
+    requested_led_state_values  = COMH_GetRequestedLedStateValues();
 }
 
 void LEDH_Process(void)
 {
-    if(is_new_led_states_available != FALSE)
-    {    
-        for (u8 pin_i = 0; pin_i < MAX_NUM_OF_OUTPUTS; pin_i++)
-        {
-            if ( (((u32)(requested_leds >> (u32) pin_i)) & (u32)1) != (u32)0 )
-            {
-                if(((requested_led_state_values >> pin_i) & 1) != FALSE)
-                {
-                    UpdateNewLedStates(pin_i, 1);
-                }
-                else
-                {
-                    UpdateNewLedStates(pin_i, 0);
-                }                
-            }
-        }
-        previous_led_states = requested_led_state_values;
-        is_new_led_states_available = FALSE;
-    }
+
 }
 
 void LEDH_Output(void)
@@ -164,35 +141,37 @@ void LEDH_Output(void)
     {
         led_state_index_counter = 0;
     }
-
-    if(led_state_index_counter < MAX_NUM_OF_OUTPUTS)
+    else
     {
-        if(led_state_debounce < DEBOUNCE_LED_STATE_INTERVAL)
+        if(led_state_index_counter < MAX_NUM_OF_OUTPUTS)
         {
-            led_state_debounce = led_state_debounce + 1;
-        }
-        else
-        {
-            if ( (((u32)(requested_leds >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
+            if(led_state_debounce < DEBOUNCE_LED_STATE_INTERVAL)
             {
-                if(new_led_states[led_state_index_counter] == ON)
+                led_state_debounce = led_state_debounce + 1;
+            }
+            else
+            {
+                if ( (((u32)(requested_leds >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
                 {
-                    TurnOnRelay(led_state_index_counter);
-                }
-                else if(new_led_states[led_state_index_counter] == OFF)
-                {
-                    TurnOffRelay(led_state_index_counter);
-                }
-                else
-                {
-                    
-                }
-                // disable interrupts here.
-                COMH_ClearRequestedLed(led_state_index_counter);
-                led_state_index_counter = led_state_index_counter + 1;
-            }    
-            
-            led_state_debounce = 0;    
+                    if ( (((u32)(requested_led_state_values >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
+                    {
+                        TurnOnRelay(led_state_index_counter);
+                    }
+                    else if(new_led_states[led_state_index_counter] == OFF)
+                    {
+                        TurnOffRelay(led_state_index_counter);
+                    }
+                    else
+                    {
+                        
+                    }
+                    // disable interrupts here.
+                    COMH_ClearRequestedLed(led_state_index_counter);
+                    led_state_index_counter = led_state_index_counter + 1;
+                }    
+                
+                led_state_debounce = 0;    
+            }
         }
     }
 }
