@@ -71,14 +71,15 @@ void setup()
 void loop(void)
 {
   current_millis = millis();
-   
+  
+  COMH_Cyclic();
+  LEDH_Cyclic();
+  
   if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
   {
     previous_millis_50ms = millis();
 
-    SENH_Cyclic();
-    LEDH_Input();
-    LEDH_Cyclic();
-    LEDH_Output();
+    SENH_Cyclic50ms();
+    LEDH_Cyclic50ms();
   }
 }

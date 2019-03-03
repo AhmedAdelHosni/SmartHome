@@ -26,14 +26,15 @@
 /*                  Definition of local function like macros                  */
 /******************************************************************************/
 
-#define CYCLE_TIME                          50
-#define MAX_NUM_OF_OUTPUTS                  18
-#define LED_STATE_UPDATE_INTERVAL           200
+#define CYCLE_TIME                          50u
+#define MAX_NUM_OF_OUTPUTS                  18u
+#define LED_STATE_UPDATE_INTERVAL           200u
 #define DEBOUNCE_LED_STATE_INTERVAL         LED_STATE_UPDATE_INTERVAL / CYCLE_TIME
 
-#define ON                                  1
-#define OFF                                 0
+#define ON                                  1u
+#define OFF                                 0u
 
+#define REQUESTED_LEDS_NONE                 0u
 /******************************************************************************/
 /*          Definition of local types (typedef, enum, struct, union)          */
 /******************************************************************************/
@@ -61,8 +62,8 @@ const uint16_t port_name[] = { &PORTE, &PORTE, &PORTE, &PORTE,
                                &PORTD, &PORTD};
 
 static u32 previous_led_states   = 0;
-static u32 requested_led_states  = 0;
-static u32 confirmed_led_states  = 0;
+static u32 requested_led_state_values  = 0;
+static u32 requested_leds  = 0;
 
 // TODO : Init all values with 0 in a loop
 static u8 * ac_states;
@@ -77,6 +78,9 @@ static u8 led_state_debounce = 0;
 /******************************************************************************/
 
 
+void LEDH_Input(void);
+void LEDH_Process(void);
+void LEDH_Output(void);
 void TurnOnRelay(u8 pin_n);
 void TurnOffRelay(u8 pin_n);
 void UpdateNewLedStates(u8 pin_i, u8 new_state);
@@ -94,29 +98,52 @@ void LEDH_Init(void)
 
 }
 
+void LEDH_Cyclic(void)
+{
+    if(requested_leds != REQUESTED_LEDS_NONE)
+    {
+        if(led_state_index_counter < MAX_NUM_OF_OUTPUTS)
+        {
+            if ( (((u32)(requested_leds >> (u32) led_state_index_counter)) & (u32)1) == (u32)0 )
+            {
+                led_state_index_counter++;
+            }
+        }
+        else
+        {
+            led_state_index_counter = 0;
+        }
+    }
+}
+
+void LEDH_Cyclic50ms(void)
+{
+    LEDH_Input();
+    LEDH_Process();
+    LEDH_Output();
+}
+
 void LEDH_Input(void)
 {
     ac_states  = SENH_GetCurrentLedStates();    
-    requested_led_states  = COMH_GetRequestedLedStates();
-    confirmed_led_states  = COMH_GetConfirmedLedStates();
+    requested_led_state_values  = COMH_GetRequestedLedStateValues();
+    requested_leds  = COMH_GetRequestedLeds();
 
-    if(requested_led_states != previous_led_states)
+    if(requested_led_state_values != previous_led_states)
     {
         is_new_led_states_available = TRUE;
     }
 }
 
-void LEDH_Cyclic(void)
+void LEDH_Process(void)
 {
     if(is_new_led_states_available != FALSE)
     {    
-        u32 updated_pins = requested_led_states ^ previous_led_states;
-
         for (u8 pin_i = 0; pin_i < MAX_NUM_OF_OUTPUTS; pin_i++)
         {
-            if ( (((u32)(confirmed_led_states >> (u32) pin_i)) & (u32)1) != (u32)0 )
+            if ( (((u32)(requested_leds >> (u32) pin_i)) & (u32)1) != (u32)0 )
             {
-                if(((requested_led_states >> pin_i) & 1) != FALSE)
+                if(((requested_led_state_values >> pin_i) & 1) != FALSE)
                 {
                     UpdateNewLedStates(pin_i, 1);
                 }
@@ -126,17 +153,16 @@ void LEDH_Cyclic(void)
                 }                
             }
         }
-        previous_led_states = requested_led_states;
+        previous_led_states = requested_led_state_values;
+        is_new_led_states_available = FALSE;
     }
 }
 
 void LEDH_Output(void)
 {
-    if(is_new_led_states_available != FALSE)
+    if(requested_leds == REQUESTED_LEDS_NONE)
     {
-        led_state_debounce = DEBOUNCE_LED_STATE_INTERVAL;
         led_state_index_counter = 0;
-        is_new_led_states_available = FALSE;
     }
 
     if(led_state_index_counter < MAX_NUM_OF_OUTPUTS)
@@ -144,11 +170,10 @@ void LEDH_Output(void)
         if(led_state_debounce < DEBOUNCE_LED_STATE_INTERVAL)
         {
             led_state_debounce = led_state_debounce + 1;
-            led_state_debounce = 0;
         }
         else
         {
-            if ( (((u32)(confirmed_led_states >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
+            if ( (((u32)(requested_leds >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
             {
                 if(new_led_states[led_state_index_counter] == ON)
                 {
@@ -162,11 +187,13 @@ void LEDH_Output(void)
                 {
                     
                 }
-            }
+                // disable interrupts here.
+                COMH_ClearRequestedLed(led_state_index_counter);
+                led_state_index_counter = led_state_index_counter + 1;
+            }    
             
-            led_state_index_counter++;
+            led_state_debounce = 0;    
         }
-        
     }
 }
 
