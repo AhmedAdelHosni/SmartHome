@@ -128,7 +128,7 @@ void UpdateLedStates(u8 relay_index, u8 relay_new_state)
     }
     else if(relay_new_state == 0)
     {
-        set_requested_led_state_value_bitfields &= ~(1 <<(u32) relay_index);
+        set_requested_led_state_value_bitfields &= ~((u32)1 <<(u32) relay_index);
     }
         
     set_requested_led_bitfields |= (u32)((u32)1<<(u32) relay_index);
@@ -148,7 +148,7 @@ u32 COMH_GetRequestedLeds(void)
 
 void COMH_ClearRequestedLed(u8 relay_index)
 {
-    set_requested_led_bitfields &= ~(1 <<(u32) relay_index);
+    set_requested_led_bitfields &= ~((u32)1 <<(u32) relay_index);
     Serial.print(" COMH COMH_ClearRequestedLed : ");
     Serial.println(set_requested_led_bitfields);
     

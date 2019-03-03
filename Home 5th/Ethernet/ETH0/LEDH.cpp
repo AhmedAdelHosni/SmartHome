@@ -159,13 +159,13 @@ void LEDH_Output(void)
             }
             else
             {
-                if ( (((u32)(requested_leds >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
+                if ( (((u32)((u32)requested_leds >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
                 {
                   Serial.print("Requested Led : ");
                   Serial.println(led_state_index_counter);
                   Serial.print("Requesed LED STATE : ");
                   Serial.println(requested_led_state_values);
-                    if ( (((u32)(requested_led_state_values >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
+                    if ( (((u32)((u32)requested_led_state_values >> (u32) led_state_index_counter)) & (u32)1) != (u32)0 )
                     {
                         TurnOnRelay(led_state_index_counter);
                     }
@@ -179,7 +179,7 @@ void LEDH_Output(void)
                     }
                     // disable interrupts here.
                     COMH_ClearRequestedLed(led_state_index_counter);
-                    requested_leds &= ~(1 <<(u32) led_state_index_counter);
+                    requested_leds &= ~((u32)1 <<(u32) led_state_index_counter);
                     led_state_index_counter = led_state_index_counter + 1;
                 }    
                 
