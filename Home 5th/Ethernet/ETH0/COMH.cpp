@@ -45,7 +45,8 @@
 byte mac[] = MAC_ADDR;
 byte ip[]  = IP_ADDR;
 
-static char mqtt_topic_subscribe[MAX_MQTT_SUBSRIBE_SIZE] = MQTT_TOPIC_SUBSCRIBE_NAME;
+// TODO : fix the handle of this as a macro
+static char mqtt_topic_subscribe[MAX_MQTT_SUBSRIBE_SIZE] = "OH/E0/#";
 
 static String mqtt_read_topic_buffer;
 static String mqtt_read_payload_buffer;
@@ -78,11 +79,13 @@ void mqtt_recieved_buffer(String &topic, String &payload) {
     u8 relay_index_u8;
     u8 relay_index_new_state_u8;
 
-    relay_index_str = topic.substring(8, payload.lastIndexOf("/"));
+    relay_index_str = topic.substring(8, topic.lastIndexOf("/"));
     relay_index_u8 = relay_index_str.toInt();
 
-    relay_index_new_state_u8 = mqtt_read_payload_buffer.toInt();
-
+    relay_index_new_state_u8 = payload.toInt();
+  //  DEBUG_SERIAL(relay_index_u8);
+  //  DEBUG_SERIAL( " " );
+  //  DEBUG_SERIAL_NL(relay_index_new_state_u8);
     UpdateLedStates(relay_index_u8, relay_index_new_state_u8);
 }
 
@@ -115,6 +118,10 @@ void COMH_INIT(void)
 
 void UpdateLedStates(u8 relay_index, u8 relay_new_state)
 {
+    Serial.print(" COMH relay_index : ");
+    Serial.println(relay_index);
+    Serial.print(" COMH relay_new_state : ");
+    Serial.println(relay_new_state);
     if(relay_new_state == 1)
     {
         set_requested_led_state_value_bitfields |= (u32)((u32)1<<(u32) relay_index);
@@ -125,6 +132,8 @@ void UpdateLedStates(u8 relay_index, u8 relay_new_state)
     }
         
     set_requested_led_bitfields |= (u32)((u32)1<<(u32) relay_index);
+  //  Serial.print(" COMH UpdateLedStates : ");
+  //  Serial.println(set_requested_led_state_value_bitfields);
 }
 
 u32 COMH_GetRequestedLedStateValues(void)
@@ -139,7 +148,10 @@ u32 COMH_GetRequestedLeds(void)
 
 void COMH_ClearRequestedLed(u8 relay_index)
 {
-    set_requested_led_state_value_bitfields &= ~(1 <<(u32) relay_index);
+    set_requested_led_bitfields &= ~(1 <<(u32) relay_index);
+    Serial.print(" COMH COMH_ClearRequestedLed : ");
+    Serial.println(set_requested_led_bitfields);
+    
 }
 
 void COMH_PublishMQTT(const String topic, const String payload)

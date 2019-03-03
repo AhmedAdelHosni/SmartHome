@@ -53,33 +53,33 @@ static unsigned long previous_millis_50ms = 0;
 
 void setup()
 {
-    IOHW_ConfigurePorts();
+  IOHW_ConfigurePorts();
 
 #if (IS_DEBUG_SERIAL != APPLICATION_DISABLED)
-    IOHW_SerialBegin();  
-    IOHW_DisableSerialRX(); // override the Serial.begin and disable the Receiver since pin PE1 "USART0_RX" will be used.
+  IOHW_SerialBegin();
+  IOHW_DisableSerialRX(); // override the Serial.begin and disable the Receiver since pin PE1 "USART0_RX" will be used.
 #endif
-  
+
 #ifdef ETHERNET_CONN
-    COMH_INIT();
-    COMH_PublishMQTT("ETH0/State/", "System is started");
+  COMH_INIT();
+  COMH_PublishMQTT("ETH0/State/", "System is started");
 #endif
-    SENH_Init();
-    LEDH_Init();
+  SENH_Init();
+  LEDH_Init();
 }
 
 void loop(void)
 {
-    current_millis = millis();
+  current_millis = millis();
 
-    COMH_Cyclic();
-    LEDH_Cyclic();
+  COMH_Cyclic();
+  LEDH_Cyclic();
 
-    if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
-    {
-        previous_millis_50ms = millis();
+  if ((unsigned long)(current_millis - previous_millis_50ms) >= INTERVAL_PERIOD_50_MS)  // 50ms cyclic
+  {
+    previous_millis_50ms = millis();
 
-        SENH_Cyclic50ms();
-        LEDH_Cyclic50ms();
-    }
+    SENH_Cyclic50ms();
+    LEDH_Cyclic50ms();
+  }
 }

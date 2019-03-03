@@ -75,6 +75,16 @@ void IOHW_DisableSerialRX(void)
 }
 #endif
 
+void IOHW_OutputHigh(u8 * port_name, u8 pin)
+{  
+  *port_name |= (u8)((u8)1<<(u8) pin);
+}
+
+void IOHW_OutputLow(u8 * port_name, u8 pin)
+{
+  *port_name &= ~(1 <<(u8) pin);
+}
+
 void IOHW_TogglePin(uint16_t* port_name, u8 pin)
 {
   *port_name ^= (1UL << pin);
