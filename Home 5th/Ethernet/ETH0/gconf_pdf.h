@@ -54,7 +54,7 @@
 /*
  * Define the MQTT topic subsribed to which will contain the data from the controller.
  */
-#define MQTT_TOPIC_SUBSCRIBE_NAME       "/" MQTT_HA_BROKER_NAME "/" DEVICE_NAME "/#"
+#define MQTT_TOPIC_SUBSCRIBE_NAME       "\"/" MQTT_HA_BROKER_NAME "/" DEVICE_NAME "/#\""
 
 /*
  * To Enable Serial debugging in the SW a specific MACRO has to be defined.
@@ -68,6 +68,22 @@
  * Define Serial Transmission Baud Rate 
  */
 #define GCONF_BAUD_RATE                  115200
+
+/* 
+ * During development it may be required to test the LEDH output on normal diode LED.
+ * Definig the MACRO as APPLICATION_ENABLED will set the output pin as High or Low 
+ * if the command received from the Home automation system is 1 or 0.
+ * The LEDH will not check for the current pin status.
+ * Defining the MACRO as APPLICATION_DISABLED is the correct value during production.
+ * The LEDH will check the current pin status and toggle the pin output accordingly.
+ */
+#define APPL_ENABLE_LEDH_TEST           APPLICATION_DISABLED
+
+/* 
+ * This defines the delay between executing mutiple LED commands received at one common 
+ * MQTT request cycle.
+ */
+#define LED_STATE_UPDATE_INTERVAL       200u
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

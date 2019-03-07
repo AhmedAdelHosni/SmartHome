@@ -46,7 +46,7 @@ byte mac[] = MAC_ADDR;
 byte ip[]  = IP_ADDR;
 
 // TODO : fix the handle of this as a macro
-static char mqtt_topic_subscribe[MAX_MQTT_SUBSRIBE_SIZE] = "OH/E0/#";
+static char mqtt_topic_subscribe[MAX_MQTT_SUBSRIBE_SIZE] = MQTT_TOPIC_SUBSCRIBE_NAME;
 
 static String mqtt_read_topic_buffer;
 static String mqtt_read_payload_buffer;
