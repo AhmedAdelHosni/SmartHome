@@ -30,14 +30,14 @@
  * Define the IP address for your Ethernet Sheild Module.
  * This shall be unique for each device.
  */
-#define GCONF_IP_ADDR                   {192, 168, 100, 177};
+#define GCONF_IP_ADDR                   {192, 168, 1, 177};
 
 /*
  * Define the IP address of you Home Automation Controller.
  * This Controller can be a Raspberry PI module running a MQTT broker.
  * The IP of this controller shall be static and fixed from the router settings.
  */
-#define GCONF_CLIENT_ADDR               "192.168.100.104"
+#define GCONF_CLIENT_ADDR               "192.168.1.3"
 
 /*
  * Define the maximuim size of the MQTT subscribe topic.
@@ -54,7 +54,7 @@
 /*
  * Define the MQTT topic subsribed to which will contain the data from the controller.
  */
-#define MQTT_TOPIC_SUBSCRIBE_NAME       "\"/" MQTT_HA_BROKER_NAME "/" DEVICE_NAME "/#\""
+#define MQTT_TOPIC_SUBSCRIBE_NAME       "/"MQTT_HA_BROKER_NAME"/"DEVICE_NAME"/#"
 
 /*
  * To Enable Serial debugging in the SW a specific MACRO has to be defined.
@@ -77,7 +77,7 @@
  * Defining the MACRO as APPLICATION_DISABLED is the correct value during production.
  * The LEDH will check the current pin status and toggle the pin output accordingly.
  */
-#define APPL_ENABLE_LEDH_TEST           APPLICATION_DISABLED
+#define APPL_ENABLE_LEDH_TEST           APPLICATION_ENABLED
 
 /* 
  * This defines the delay between executing mutiple LED commands received at one common 
